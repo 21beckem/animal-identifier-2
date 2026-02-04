@@ -12,12 +12,17 @@
  * @param {string} [props.size] - Size: 'sm', 'md', 'lg' (default: 'md')
  * @returns {JSX.Element}
  */
+import { Show } from 'solid-js';
+import './style.css';
 export default function LoadingSpinner(props) {
 	const sizeClass = `spinner--${props.size || 'md'}`;
 
 	return (
-		<div class={`spinner ${sizeClass} ${props.class || ''}`}>
-			<div class="spinner__ring"></div>
-		</div>
+		<>
+			<div class={`spinner-dimmer ${props.show === false ? 'hidden' : ''}`}></div>
+			<div class={`spinner ${sizeClass} ${props.class || ''} ${props.show === false ? 'hidden' : ''}`}>
+				<div class="spinner__ring"></div>
+			</div>
+		</>
 	);
 }

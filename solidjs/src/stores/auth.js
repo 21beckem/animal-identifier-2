@@ -1,4 +1,6 @@
 import { createSignal, createEffect } from 'solid-js';
+import { getCurrentUser } from '../services/auth';
+import { saveUser, loadUser } from '../services/storage';
 
 /**
  * @typedef {Object} User
@@ -20,6 +22,7 @@ const [isLoading, setIsLoading] = createSignal(false);
 export function setUser(user) {
   setCurrentUser(user);
   setIsAuthenticated(!!user);
+  saveUser(user);
 }
 
 /**
@@ -28,6 +31,7 @@ export function setUser(user) {
 export function clearUser() {
   setCurrentUser(null);
   setIsAuthenticated(false);
+  saveUser(null);
 }
 
 /**
@@ -46,20 +50,19 @@ export function setAuthLoading(loading) {
 export async function checkSession() {
   setIsLoading(true);
   
+  let localUser = loadUser();
+  if (localUser) {
+    setUser(localUser);
+    setIsLoading(false);
+    return localUser;
+  }
+  
   try {
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      credentials: 'include', // Include cookies
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    const response = await getCurrentUser();
     
-    if (response.ok) {
-      const data = await response.json();
-      const user = data.user || data;
-      setUser(user);
-      return user;
+    if (!!response) {
+      setUser(response);
+      return response;
     } else {
       // Not authenticated or session expired
       clearUser();

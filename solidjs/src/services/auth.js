@@ -64,7 +64,9 @@ export async function signin(email, password) {
  * @throws {ApiError} If signout fails
  */
 export async function signout() {
-	await api.post('/api/auth/signout', {});
+	try {
+		await api.post('/api/auth/signout', {});
+	} catch (error) {}
 	// Clear auth store after signout
 	authStore.clearUser();
 }
@@ -80,6 +82,7 @@ export async function getCurrentUser() {
 	const response = await api.get('/api/auth/me');
 	return response;
 }
+window.authStore = authStore; // For debugging purposes
 
 /**
  * Check if user has an active session

@@ -15,6 +15,7 @@ import Auth from './pages/Auth';
 import UserDashboard from './pages/UserDashboard';
 import CreateSighting from './pages/CreateSighting';
 import EditSighting from './pages/EditSighting';
+import LoadingSpinner from './components/LoadingSpinner/comp';
 import authStore from './stores/auth';
 import './styles.css';
 
@@ -71,6 +72,7 @@ function App() {
 					)} />
 				</Router>
 			</main>
+				<LoadingSpinner show={authStore.isLoadingSignal()} />
 		</ErrorBoundary>
 	);
 }

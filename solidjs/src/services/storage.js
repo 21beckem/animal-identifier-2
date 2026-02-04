@@ -44,9 +44,7 @@ export function clearSession() {
  * @param {User} user - User object
  */
 export function saveUser(user) {
-	if (user) {
-		localStorage.setItem(USER_KEY, JSON.stringify(user));
-	}
+	localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 /**
