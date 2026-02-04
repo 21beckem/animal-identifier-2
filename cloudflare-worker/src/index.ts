@@ -1,7 +1,8 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { runMigrations } from "./db/migrate";
-import { seedDatabase } from "./db/seed";
+import { seedDatabase, clearDatabase } from "./db/seed";
+import type { Env } from "./types";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -40,6 +41,16 @@ app.post('/api/migrate', async (c) => {
 app.post('/api/seed', async (c) => {
 	try {
 		const result = await seedDatabase(c.env.DB);
+		return c.json({ success: true, ...result });
+	} catch (error) {
+		console.error('Seed failed:', error);
+		return c.json({ success: false, error: String(error) }, 500);
+	}
+});
+// Seed endpoint to clear all data (dev only)
+app.post('/api/seed/clear', async (c) => {
+	try {
+		const result = await clearDatabase(c.env.DB);
 		return c.json({ success: true, ...result });
 	} catch (error) {
 		console.error('Seed failed:', error);

@@ -89,6 +89,8 @@ export async function seedDatabase(db: D1Database): Promise<SeedResult> {
   for (let i = 0; i < sampleSightings.length; i++) {
     const sighting = sampleSightings[i];
     const timestampSighted = now - (i * 86400); // Each sighting 1 day apart
+
+    if (!sighting) continue;
     
     await db.prepare(`
       INSERT INTO sightings (user_id, animal_name, location, timestamp_sighted, photo_url)

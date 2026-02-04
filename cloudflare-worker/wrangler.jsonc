@@ -10,17 +10,17 @@
     {
       "binding": "DB",
       "database_name": "sighting-dev",
-      "database_id": "YOUR_D1_DATABASE_ID",
+      "database_id": "bec0e496-e416-412e-907e-6c3d4922501a",
       "migrations_dir": "src/db/migrations",
-      "preview_database_id": "YOUR_PREVIEW_D1_DATABASE_ID"
+      "preview_database_id": "bec0e496-e416-412e-907e-6c3d4922501a"
     }
   ],
 
   "kv_namespaces": [
     {
       "binding": "SESSIONS",
-      "id": "YOUR_KV_NAMESPACE_ID",
-      "preview_id": "YOUR_KV_PREVIEW_ID"
+      "id": "abf6053250ed4b59ae6c67b910ec6174",
+      "preview_id": "abf6053250ed4b59ae6c67b910ec6174"
     }
   ],
 
@@ -39,14 +39,14 @@
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "sighting-prod",
-          "database_id": "YOUR_PROD_D1_DATABASE_ID"
+          "database_name": "sighting-dev",
+          "database_id": "bec0e496-e416-412e-907e-6c3d4922501a"
         }
       ],
       "kv_namespaces": [
         {
           "binding": "SESSIONS",
-          "id": "YOUR_PROD_KV_NAMESPACE_ID"
+          "id": "abf6053250ed4b59ae6c67b910ec6174"
         }
       ]
     }
