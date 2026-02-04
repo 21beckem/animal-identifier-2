@@ -65,9 +65,9 @@ Phase 7 (Polish & Cross-Cutting)
 - [ ] T006 Create `cloudflare-worker/wrangler.jsonc` with D1 and KV bindings (remove any R2 references)
 - [ ] T007 Create `cloudflare-worker/tsconfig.json` with strict mode enabled (type safety per constitution)
 - [ ] T008 Create `solidjs/jsconfig.json` with path aliases for components, pages, services directories
-- [ ] T009 Verify `npm install` (or `pnpm install`) runs successfully in both frontend and backend directories
-- [ ] T010 Verify `pnpm dev` runs successfully in backend; outputs local worker URL (http://localhost:8787)
-- [ ] T011 Verify `pnpm dev` runs successfully in frontend; outputs Vite dev server URL (http://localhost:5173)
+- [ ] T009 Verify `npm install` runs successfully in both frontend and backend directories
+- [ ] T010 Verify `npm dev` runs successfully in backend; outputs local worker URL (http://localhost:8787)
+- [ ] T011 Verify `npm dev` runs successfully in frontend; outputs Vite dev server URL (http://localhost:5173)
 - [ ] T012 Commit setup to feature branch with message "setup: initialize backend and frontend projects"
 
 ---
@@ -515,7 +515,7 @@ Phase 7 (Polish & Cross-Cutting)
 ### Performance Optimization
 
 - [ ] T103 [P] Optimize bundle size:
-  - Check `pnpm build` output size
+  - Check `npm build` output size
   - Target ≤500KB gzipped (SolidJS is small, this should be easy)
   - Remove unused dependencies if any
 
@@ -655,7 +655,7 @@ All tasks designed to comply with Animal Identifier Constitution v1.0.0:
 - Session auth via HTTP-only cookies (XSS-safe)
 
 ✅ **Developer Simplicity**: 
-- One-command setup: `pnpm install && pnpm dev` (both frontend + backend)
+- One-command setup: `npm install && npm dev` (both frontend + backend)
 - Clear file organization (components/, services/, pages/)
 - Minimal dependencies (SolidJS + Hono + Zod only)
 - Configuration documented in quickstart.md

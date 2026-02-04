@@ -395,16 +395,16 @@ const SignUpRequest = z.object({
 1. **Clone + Install**:
    ```bash
    git clone ...
-   pnpm install
+   npm install
    ```
 
 2. **Start Services**:
    ```bash
    # Terminal 1
-   cd cloudflare-worker && pnpm dev
+   cd cloudflare-worker && npm dev
 
    # Terminal 2
-   cd solidjs && pnpm dev
+   cd solidjs && npm dev
    ```
 
 3. **Access Applications**:
@@ -428,7 +428,7 @@ wrangler deploy --env production
 **Frontend**:
 ```bash
 cd solidjs
-pnpm build                          # Generates dist/
+npm build                          # Generates dist/
 wrangler pages deploy dist/         # Deploy to Cloudflare Pages
 ```
 

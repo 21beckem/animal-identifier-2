@@ -164,7 +164,7 @@ Tests are NOT created EVER
 
 Before deploying to production:
 - Cloudflare Worker MUST pass `wrangler deploy --dry-run` validation
-- Frontend MUST build successfully via `pnpm build`
+- Frontend MUST build successfully via `npm build`
 - Smoke test MUST verify: homepage loads, API health endpoint responds
 
 ---

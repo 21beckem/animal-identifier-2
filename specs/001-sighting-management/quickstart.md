@@ -10,7 +10,7 @@
 
 ## Prerequisites
 
-- Node.js 18+ and pnpm installed
+- Node.js 18+ and npm installed
 - Cloudflare account (free tier OK)
 - Git for version control
 - Text editor (VS Code recommended)
@@ -23,15 +23,15 @@
 
 ```bash
 # In repository root
-pnpm install
+npm install
 
 # Install backend dependencies
 cd cloudflare-worker
-pnpm install
+npm install
 
 # Install frontend dependencies
 cd ../solidjs
-pnpm install
+npm install
 
 # Return to root
 cd ..
@@ -148,7 +148,7 @@ Ensure `cloudflare-worker/wrangler.jsonc` includes D1 and KV bindings:
 
 ```bash
 cd cloudflare-worker
-pnpm dev
+npm dev
 ```
 
 Output:
@@ -164,7 +164,7 @@ Swagger UI available at: **http://localhost:8787/**
 
 ```bash
 cd solidjs
-pnpm dev
+npm dev
 ```
 
 Output:
@@ -331,7 +331,7 @@ wrangler d1 execute sighting-dev --file cloudflare-worker/src/db/migrations/001_
 **Solution**: Install dependencies:
 ```bash
 cd cloudflare-worker
-pnpm install
+npm install
 ```
 
 ### Issue: Frontend shows "API not responding"
@@ -339,7 +339,7 @@ pnpm install
 **Solution**: Ensure backend running:
 ```bash
 # In terminal running backend
-pnpm dev
+npm dev
 # Should output: 👂 Listening on http://localhost:8787
 ```
 
@@ -363,7 +363,7 @@ await SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: sessionT
 
 ```bash
 cd solidjs
-pnpm build
+npm build
 
 # Check dist/index.js size
 ls -lh dist/index.js
@@ -391,8 +391,8 @@ time curl http://localhost:8787/api/sightings \
 ```bash
 # Build frontend
 cd solidjs
-pnpm build
-pnpm preview
+npm build
+npm preview
 
 # In another terminal, run Lighthouse
 npm install -g lighthouse
@@ -431,7 +431,7 @@ lighthouse http://localhost:4173/ --chrome-flags="--headless=new"
 ```bash
 # Run this to verify all tools installed
 node --version         # Should be v18+
-pnpm --version        # Should be v8+
+npm --version        # Should be v8+
 git --version         # Should be v2.x+
 wrangler --version    # Should be v4.x+
 ```
