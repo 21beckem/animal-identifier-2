@@ -4,6 +4,8 @@
 **Created**: 2026-02-04  
 **Setup Time**: ~5 minutes
 
+**Tech Stack**: SolidJS (JavaScript frontend) + Cloudflare Workers (TypeScript backend) + D1 SQLite
+
 ---
 
 ## Prerequisites

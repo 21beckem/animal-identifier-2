@@ -170,3 +170,16 @@ Navigation bar contains persistent "Add Sighting" button. If user is not authent
 
 All specifications above are self-contained with reasonable defaults applied. No clarifications marked - see Assumptions section for trade-offs made during specification.
 
+---
+
+## Clarifications Session (2026-02-04)
+
+### Technology Language Decision
+
+- **Q**: Should TypeScript be used for both frontend and backend?
+- **A**: TypeScript for backend only (Cloudflare Workers); JavaScript for frontend (SolidJS)
+  - **Rationale**: Backend APIs require type safety for contract validation (Zod + Chanfana). Frontend JavaScript reduces bundle size and build complexity without sacrificing safety (JSDoc + IDE type hints suffice for UI code).
+  - **Implementation**: Cloudflare Worker endpoints in TypeScript; SolidJS components in JavaScript with optional JSDoc type hints for critical functions.
+
+---
+

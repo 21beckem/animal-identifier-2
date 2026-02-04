@@ -19,10 +19,10 @@ Implement a complete wildlife sighting management platform with user authenticat
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x (frontend & backend), Node.js 18+ runtime (Cloudflare Workers)  
+**Language/Version**: JavaScript (frontend), TypeScript 5.x (backend), Node.js 18+ runtime (Cloudflare Workers)  
 **Primary Dependencies**:
-- Frontend: SolidJS 1.x + Vite 7.x for bundling and HMR
-- Backend: Cloudflare Workers (Hono 4.x + Chanfana 2.x for OpenAPI)
+- Frontend: SolidJS 1.x + Vite 7.x for bundling and HMR (JavaScript, JSDoc for type hints)
+- Backend: Cloudflare Workers (Hono 4.x + Chanfana 2.x for OpenAPI, TypeScript)
 - Database: Cloudflare D1 (SQLite edge database)
 - Auth: Session-based (HTTP-only cookies via Workers KV for session store)
 - Storage: Cloudflare R2 (object storage for photo uploads)
@@ -52,7 +52,7 @@ Implement a complete wildlife sighting management platform with user authenticat
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [x] **Type Safety First**: All TypeScript in strict mode; Zod schemas for API validation (backend endpoints validate requests/responses)
+- [x] **Type Safety First**: Backend TypeScript in strict mode; Zod schemas for API validation (backend endpoints validate requests/responses); frontend uses JavaScript with JSDoc for type hints
 - [x] **Component-Driven UI**: Frontend components follow `comp.jsx` + `style.css` co-location pattern (NavBar, SignIn, SignUp, SightingForm, Dashboard, Card)
 - [x] **API Contract Integrity**: OpenAPI 3.1 schema defined via Chanfana; semantic versioning (v1.0.0); breaking changes require MAJOR bump
 - [x] **UX Consistency**: Interactive elements have visual feedback (hover/focus states); forms validate with error messages positioned near fields; loading indicators shown
@@ -85,7 +85,7 @@ specs/001-sighting-management/
 ### Source Code (repository root)
 
 ```text
-cloudflare-worker/
+cloudflare-worker/                  ← Backend (TypeScript)
 ├── src/
 │   ├── index.ts                     # Hono app setup, OpenAPI registry, route definitions
 │   ├── types.ts                     # Shared types (User, Sighting, API responses)
@@ -112,7 +112,7 @@ cloudflare-worker/
 │       └── 002_add_soft_delete.sql  # Add deleted_at column
 └── wrangler.jsonc                   # Workers config (D1 binding, R2 binding, KV binding)
 
-solidjs/
+solidjs/                            ← Frontend (JavaScript)
 ├── src/
 │   ├── index.jsx                    # Entry point, App wrapper, routing setup
 │   ├── styles.css                   # Global styles (design system, spacing grid)

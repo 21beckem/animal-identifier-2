@@ -10,64 +10,100 @@
 
 | Layer | Choice | Rationale |
 |-------|--------|-----------|
-| Frontend | SolidJS 1.x + Vite 7.x | Fine-grained reactivity, small bundle size (~10KB), existing in repo |
-| Backend | Cloudflare Workers + Hono 4.x | Zero cold-start edge compute, integrated platform, existing in repo |
+| Frontend Language | JavaScript (JSDoc type hints) | Simplicity, smaller bundle, no TypeScript compilation step needed for SolidJS |
+| Frontend Framework | SolidJS 1.x + Vite 7.x | Fine-grained reactivity, small bundle size (~10KB), existing in repo |
+| Backend Language | TypeScript 5.x | Type safety, contract validation, tooling support for Cloudflare Workers |
+| Backend Framework | Cloudflare Workers + Hono 4.x | Zero cold-start edge compute, integrated platform, existing in repo |
 | Database | Cloudflare D1 (SQLite) | Edge database, local dev experience, integrated with Workers |
 | Session Store | Cloudflare KV | Fast (<10ms), auto-expiring keys, prevents centralized DB queries |
 | Photo Storage | Cloudflare R2 | Object storage, signed URLs, integrated with Workers |
 | Auth Method | Session-based (HTTP-only cookies) | Simple, XSS-resistant, server-side invalidation on sign-out |
 | Password Hashing | bcryptjs (cost 12) | Industry standard, ~250ms per hash, prevents rainbow tables |
 | API Framework | Chanfana 2.x (OpenAPI on Hono) | Contract-first development, auto-validates requests, existing in repo |
-| Validation | Zod | TypeScript-first schemas, compile-time safety, minimal overhead |
+| Validation | Zod (backend) | TypeScript-first schemas, compile-time safety, minimal overhead |
 
 ---
 
-## Frontend: SolidJS Decision
+## Frontend: SolidJS + JavaScript Decision
 
-### Why SolidJS?
+### Why SolidJS with JavaScript (not TypeScript)?
 
 **Strengths**:
 - **Fine-Grained Reactivity**: No virtual DOM overhead. Updates are surgical (only changed elements re-render).
 - **Small Bundle**: ~10KB gzipped core. With Vite tree-shaking, our bundle target is <500KB (currently plenty of headroom).
 - **JSX Syntax**: Identical to React. Lower onboarding friction for React developers.
-- **Existing in Repo**: Reduces decision complexity and setup time.
+- **JavaScript Simplicity**: No TypeScript compilation step, faster development iteration, JSDoc provides type hints where needed
+- **Existing in Repo**: SolidJS already installed; reduces decision complexity and setup time.
 - **Built-in Scoped Styles**: CSS modules support via Vite aligns with component co-location requirement.
 
 **Weaknesses** (acceptable):
 - Smaller ecosystem than React (but all needed libraries available: routing, state management via context)
 - Smaller community (but sufficient documentation and examples for MVP)
+- No compile-time type checking in frontend (mitigated by JSDoc comments and IDE intellisense)
 
-### Alternatives Considered
+### JavaScript vs TypeScript for Frontend
 
-**React**:
-- ❌ Larger bundle (~40KB + React DOM) + need for state management (Redux, Zustand, Jotai)
+**Why JavaScript (not TypeScript)?**:
+- ✅ Smaller bundle: JavaScript source has no type annotations to strip
+- ✅ Faster feedback loop: No compilation step; Vite dev server updates instantly
+- ✅ Simpler onboarding: JSDoc type hints are optional and lightweight
+- ✅ Existing ecosystem patterns: SolidJS community uses JavaScript heavily
+- ❌ Trade-off: No compile-time type safety (mitigated by JSDoc + IDE type hints)
+
+**JSDoc Type Hints** (recommended for critical paths):
+```javascript
+/** @type {import('./types').Sighting} */
+const sighting = await fetchSighting(id);
+
+/**
+ * Create a new sighting
+ * @param {string} animalName - Name of the animal
+ * @param {string} location - Location where spotted
+ * @returns {Promise<{success: boolean, id: string}>}
+ */
+async function createSighting(animalName, location) { ... }
+```
+
+### Alternatives Considered for Frontend
+
+**React + TypeScript**:
+- ✅ Massive ecosystem, type safety
+- ❌ Larger bundle (~40KB + React DOM) + state management overhead
 - ❌ Virtual DOM overhead for frequent updates
-- ✅ Massive ecosystem, but overkill for MVP scope
+- ❌ Overkill for MVP scope
 
-**Vue 3**:
+**Vue 3 + TypeScript**:
+- ✅ Excellent documentation and ecosystem
 - ❌ Options API learning curve different from existing codebase
 - ❌ Template syntax (not JSX) requires different mental model
-- ✅ Excellent documentation and ecosystem
 
 **Plain HTML/JavaScript**:
 - ❌ No reactive data binding; manual DOM manipulation is error-prone
 - ❌ No component system; leads to code duplication
 
-**Decision**: **SolidJS** balances performance, bundle size, and ecosystem needs for MVP.
+**Decision**: **SolidJS + JavaScript** balances performance, bundle size, and developer experience for MVP. Backend TypeScript (next section) provides strict type safety where it matters most (API contracts, data models).
 
 ---
 
-## Backend: Cloudflare Workers Decision
+## Backend: Cloudflare Workers + TypeScript Decision
 
-### Why Cloudflare Workers?
+### Why Cloudflare Workers with TypeScript?
 
 **Strengths**:
 - **Zero Cold-Start**: Runs on edge infrastructure globally. Request comes in → function runs immediately (no Lambda cold-start penalty).
 - **Integrated Ecosystem**: D1 (database) + R2 (storage) + KV (cache/sessions) + Analytics Engine in same platform.
-- **TypeScript Native**: Full TypeScript support with strict mode enforcement.
+- **TypeScript Support**: Full TypeScript support with strict mode enforcement. Critical for API contract safety (Zod + Chanfana).
 - **Existing in Repo**: Project already uses Wrangler, Chanfana, Hono.
 - **Cost Effective**: Free tier includes 100k requests/day; pay-as-you-go thereafter (fractions of $).
 - **DX**: Rapid feedback loop with `wrangler dev` for local development.
+
+**Why TypeScript for Backend (not JavaScript)?**:
+- ✅ Compile-time API contract validation (Zod schemas, Chanfana decorators)
+- ✅ Type-safe database operations (D1 bindings with typed results)
+- ✅ Static analysis catches bugs before runtime
+- ✅ IDE support for complex middleware chains
+- ✅ Chanfana OpenAPI framework designed for TypeScript
+- ❌ Trade-off: One extra build step (TypeScript → JavaScript), but Wrangler handles transparently
 
 **Weaknesses** (acceptable):
 - Vendor lock-in to Cloudflare (mitigated by standard Node.js/Express-like framework with Hono)
