@@ -5,6 +5,7 @@
  * All routes are defined here with proper auth guards.
  */
 
+import mount from './mount';
 import { Router, Route, Navigate } from '@solidjs/router';
 import { createSignal, onMount, Show } from 'solid-js';
 import ErrorBoundary from './components/ErrorBoundary/comp';
@@ -91,16 +92,16 @@ function App() {
 
 	return (
 		<ErrorBoundary>
-			<Router>
-				<Layout user={user} setUser={setUser}>
+      <Layout user={user} setUser={setUser}>
+			  <Router>
 					<Route path="/" component={Home} />
 					<Route path="/signup" component={Auth} />
 					<Route path="/signin" component={Auth} />
 					<Route path="/dashboard" component={UserDashboard} />
 					<Route path="/create-sighting" component={CreateSighting} />
 					<Route path="/sightings/:id/edit" component={EditSighting} />
-				</Layout>
-			</Router>
+			  </Router>
+      </Layout>
 		</ErrorBoundary>
 	);
 }

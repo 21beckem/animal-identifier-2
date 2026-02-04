@@ -5,7 +5,6 @@
  * Displays email if authenticated, shows sign-in link if not.
  */
 
-import { A, useNavigate } from '@solidjs/router';
 import { Show, createSignal } from 'solid-js';
 import * as authService from '../../services/auth';
 import * as storageService from '../../services/storage';
@@ -19,7 +18,6 @@ import './style.css';
  * @returns {JSX.Element}
  */
 export default function Navbar(props) {
-	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = createSignal(false);
 
 	const handleSignOut = async () => {
@@ -27,7 +25,7 @@ export default function Navbar(props) {
 			await authService.signout();
 			storageService.clearSession();
 			props.setUser(null);
-			navigate('/');
+			window.location.href = '/';
 		} catch (error) {
 			console.error('Sign out failed:', error);
 		}
@@ -35,9 +33,9 @@ export default function Navbar(props) {
 
 	const handleAddSighting = () => {
 		if (props.user) {
-			navigate('/create-sighting');
+			window.location.href = '/create-sighting';
 		} else {
-			navigate('/signin');
+			window.location.href = '/signin';
 		}
 	};
 
@@ -45,9 +43,9 @@ export default function Navbar(props) {
 		<nav class="navbar">
 			<div class="navbar__container">
 				{/* Logo/Brand */}
-				<A href="/" class="navbar__brand">
+				<a href="/" class="navbar__brand">
 					🦅 Wildlife Tracker
-				</A>
+				</a>
 
 				{/* Desktop Menu */}
 				<div class="navbar__menu">
@@ -64,12 +62,12 @@ export default function Navbar(props) {
 						when={props.user}
 						fallback={
 							<>
-								<A href="/signin" class="navbar__link">
+								<a href="/signin" class="navbar__link">
 									Sign In
-								</A>
-								<A href="/signup" class="navbar__btn navbar__btn--secondary">
+								</a>
+								<a href="/signup" class="navbar__btn navbar__btn--secondary">
 									Sign Up
-								</A>
+								</a>
 							</>
 						}
 					>
@@ -107,12 +105,12 @@ export default function Navbar(props) {
 						when={props.user}
 						fallback={
 							<>
-								<A href="/signin" class="navbar__mobile-link">
+								<a href="/signin" class="navbar__mobile-link">
 									Sign In
-								</A>
-								<A href="/signup" class="navbar__mobile-link">
+								</a>
+								<a href="/signup" class="navbar__mobile-link">
 									Sign Up
-								</A>
+								</a>
 							</>
 						}
 					>
