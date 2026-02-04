@@ -7,7 +7,6 @@
  */
 
 import { Show, createSignal } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
 import { signout } from '../../services/auth';
 import authStore from '../../stores/auth';
 import './style.css';
@@ -17,14 +16,13 @@ import './style.css';
  * @returns {JSX.Element}
  */
 export default function Navbar() {
-	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = createSignal(false);
 
 	const handleSignOut = async () => {
 		try {
 			await signout();
 			authStore.clearUser();
-			navigate('/');
+			window.location.href = '/';
 		} catch (error) {
 			console.error('Sign out failed:', error);
 		}
@@ -32,9 +30,10 @@ export default function Navbar() {
 
 	const handleAddSighting = () => {
 		if (authStore.isAuthenticated) {
-			navigate('/create-sighting');
+			window.location.href = '/create-sighting';
 		} else {
-			navigate('/auth?mode=signin');
+			window.location.href = '/auth?mode=signin';
+
 		}
 	};
 

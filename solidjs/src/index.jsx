@@ -47,9 +47,9 @@ function App() {
 
 	return (
 		<ErrorBoundary>
-			<Router>
-				<Navbar />
-				<main class="page-content">
+			<Navbar />
+			<main class="page-content">
+				<Router>
 					<Route path="/" component={Home} />
 					<Route path="/auth" component={Auth} />
 					<Route path="/signup" component={Auth} />
@@ -69,8 +69,8 @@ function App() {
 							<EditSighting />
 						</ProtectedRoute>
 					)} />
-				</main>
-			</Router>
+				</Router>
+			</main>
 		</ErrorBoundary>
 	);
 }

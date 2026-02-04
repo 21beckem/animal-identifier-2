@@ -12,9 +12,19 @@ import { listSightingsRoute } from "./endpoints/sightings/list";
 import { getSightingRoute } from "./endpoints/sightings/get";
 import { updateSightingRoute } from "./endpoints/sightings/update";
 import { deleteSightingRoute } from "./endpoints/sightings/delete";
+import { cors } from "hono/cors";
+
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
+app.use('/api/*', cors({
+    origin: (origin) => origin, // Allow any origin in development, or specify your frontend URL
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    exposeHeaders: ['Content-Length'],
+    maxAge: 600,
+}));
 
 // Setup OpenAPI registry
 const openapi = fromHono(app, {
