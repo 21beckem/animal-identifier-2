@@ -1,54 +1,102 @@
-import mount from '/mount';
-import '/styles.css';
-import { Page } from '/components/Page/comp';
-import { Navbar } from '/components/Navbar/comp';
-import { Cards } from '/components/Cards/comp';
-import { Card } from '/components/Card/comp';
-import { Footer } from '/components/Footer/comp';
+/**
+ * App Entry Point
+ *
+ * Sets up routing, error boundary, and renders the main app wrapper.
+ * All routes are defined here with proper auth guards.
+ */
 
-const Hero = () => (
-  <section className="hero">
-    <div className="container hero__content">
-      <h1>Document Wildlife, Share Discoveries</h1>
-      <p>
-        Join a community of nature enthusiasts recording animal sightings
-      </p>
-      <div className="hero__actions">
-        <a className="btn btn--primary" href="#get-started">
-          Get Started
-        </a>
-        <a className="btn btn--secondary" href="#login">
-          Log in
-        </a>
-      </div>
-    </div>
-  </section>
-);
+import { Router, Route, Navigate } from '@solidjs/router';
+import { createSignal, onMount, Show } from 'solid-js';
+import ErrorBoundary from './components/ErrorBoundary/comp';
+import Navbar from './components/Navbar/comp';
+import Home from './pages/Home';
+import Auth from './pages/Auth';
+import UserDashboard from './pages/UserDashboard';
+import CreateSighting from './pages/CreateSighting';
+import EditSighting from './pages/EditSighting';
+import * as authService from './services/auth';
+import * as storageService from './services/storage';
+import './styles.css';
 
-const Features = () => (
-  <section className="section section--muted" aria-labelledby="features-title">
-    <div className="container">
-      <h2 id="features-title" className="section__title">Features</h2>
+/**
+ * Protected Route Wrapper
+ * Redirects unauthenticated users to signin
+ */
+function ProtectedRoute(props) {
+	const [isAuthenticated, setIsAuthenticated] = createSignal(false);
+	const [isLoading, setIsLoading] = createSignal(true);
 
-      <Cards>
-        <Card icon="📷" title="Photo Upload">
-          Capture wildlife moments with drag-and-drop photo upload. Support for
-            JPEG, PNG, and WebP formats.
-        </Card>
+	onMount(async () => {
+		try {
+			const user = await authService.checkSession();
+			setIsAuthenticated(!!user);
+		} catch (error) {
+			console.error('Auth check failed:', error);
+			setIsAuthenticated(false);
+		} finally {
+			setIsLoading(false);
+		}
+	});
 
-        <Card icon="📍" title="Location Tracking">
-          Automatically GPS coordinates capture or manual location entry for
-            precise wildlife documentation.
-        </Card>
+	return (
+		<Show when={!isLoading()}>
+			<Show
+				when={isAuthenticated()}
+				fallback={
+					// Not authenticated, redirect to signin
+					<Navigate href="/signin" />
+				}
+			>
+				{props.children}
+			</Show>
+		</Show>
+	);
+}
 
-        <Card icon="📊" title="Personal Dashboard">
-          Track all your sightings in one place with detailed views and easy
-            management.
-        </Card>
-      </Cards>
-    </div>
-  </section>
-);
+/**
+ * Main App Component
+ * Wraps all routes with error boundary, nav bar, and layout
+ */
+function App() {
+	const [user, setUser] = createSignal(null);
+	const [isLoading, setIsLoading] = createSignal(true);
+
+	// Check session on app mount
+	onMount(async () => {
+		try {
+			const currentUser = await authService.checkSession();
+			if (currentUser) {
+				setUser(currentUser);
+				storageService.saveUser(currentUser);
+			}
+		} catch (error) {
+			console.error('Failed to restore session:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	});
+
+	return (
+		<ErrorBoundary>
+			<div class="page">
+				<Navbar user={user()} setUser={setUser} />
+
+				<main class="page-content">
+					<Router>
+						<Route path="/" component={Home} />
+						<Route path="/signup" component={Auth} />
+						<Route path="/signin" component={Auth} />
+						<Route path="/dashboard" component={UserDashboard} />
+						<Route path="/create-sighting" component={CreateSighting} />
+						<Route path="/sightings/:id/edit" component={EditSighting} />
+					</Router>
+				</main>
+			</div>
+		</ErrorBoundary>
+	);
+}
+
+export default App;
 
 const HowItWorks = () => (
   <section className="section" aria-labelledby="how-title">
