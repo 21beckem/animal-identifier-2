@@ -80,13 +80,6 @@ Create `.env.local` in `cloudflare-worker/` directory:
 # Local development
 WORKERS_ENV=development
 
-# R2 Bucket (for local testing, use public read URLs)
-R2_BUCKET_NAME=sighting-photos
-
-# Signing options for R2 URLs (use dummy values for local)
-R2_ACCESS_KEY_ID=local_dev
-R2_SECRET_ACCESS_KEY=local_dev
-
 # Session KV namespace
 KV_NAMESPACE_ID=sighting_sessions
 
@@ -127,12 +120,6 @@ Ensure `cloudflare-worker/wrangler.jsonc` includes D1 and KV bindings:
           "binding": "SESSIONS",
           "id": "YOUR_KV_ID",
           "preview_id": "YOUR_KV_PREVIEW_ID"
-        }
-      ],
-      "r2_buckets": [
-        {
-          "binding": "R2_BUCKET",
-          "bucket_name": "sighting-photos"
         }
       ]
     }
@@ -356,14 +343,9 @@ pnpm dev
 # Should output: 👂 Listening on http://localhost:8787
 ```
 
-### Issue: CORS error when uploading photo
+### Issue: Photo upload fails or times out
 
-**Solution**: Ensure `wrangler.jsonc` includes R2 bucket binding:
-```jsonc
-"r2_buckets": [
-  { "binding": "R2_BUCKET", "bucket_name": "sighting-photos" }
-]
-```
+**Solution**: Ensure photo is <2MB and in valid format (JPEG/PNG/WebP). Check browser FileReader API support. For debugging, add console logs to SightingForm component to verify base64 conversion succeeds.
 
 ### Issue: Session expires too quickly
 
@@ -425,12 +407,11 @@ lighthouse http://localhost:4173/ --chrome-flags="--headless=new"
 
 1. **Implement Backend** (Phase 2 Tasks):
    - Create auth endpoints (signup, signin, signout)
-   - Implement sighting CRUD endpoints
-   - Add photo upload to R2
+   - Implement sighting CRUD endpoints with base64 photo handling
 
 2. **Implement Frontend** (Phase 2 Tasks):
    - Create authentication UI components (SignUp, SignIn)
-   - Create sighting management components (Form, Dashboard, Card)
+   - Create sighting management components (Form, Dashboard, Card) with FileReader for photo → base64 conversion
    - Wire up API calls in services layer
 
 3. **Testing** (Optional per constitution):
@@ -441,7 +422,7 @@ lighthouse http://localhost:4173/ --chrome-flags="--headless=new"
 4. **Deployment**:
    - Deploy backend: `wrangler deploy --env production`
    - Deploy frontend: Build and push to CDN or static host
-   - Configure D1 production database and R2 bucket
+   - Configure D1 production database
 
 ---
 

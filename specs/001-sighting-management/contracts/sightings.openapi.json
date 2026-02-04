@@ -25,11 +25,7 @@
   "tags": [
     {
       "name": "Sightings",
-      "description": "Wildlife sighting CRUD operations"
-    },
-    {
-      "name": "Photo Upload",
-      "description": "Photo upload and management"
+      "description": "Wildlife sighting CRUD operations with photo as base64 data URL"
     }
   ],
   "paths": {
@@ -37,7 +33,7 @@
       "post": {
         "tags": ["Sightings"],
         "summary": "Create a new sighting",
-        "description": "Record a new wildlife sighting with animal name, location, and optional photo. Timestamp is auto-populated server-side. Requires authentication.",
+        "description": "Record a new wildlife sighting with animal name, location, and optional photo. Photo provided as base64 data URL (frontend-converted). Timestamp is auto-populated server-side. Requires authentication. Max photo size: 2MB.",
         "operationId": "createSighting",
         "security": [
           {
@@ -69,9 +65,9 @@
                   "photo_url": {
                     "type": "string",
                     "nullable": true,
-                    "format": "uri",
-                    "description": "Signed R2 URL from /api/upload/photo endpoint (optional)",
-                    "example": "https://pub-abc123.r2.dev/sightings/xyz/photo.jpg?X-Amz-Signature=..."
+                    "format": "data-url",
+                    "description": "Base64 data URL of photo (optional, frontend converts to data:image/... before submission)",
+                    "example": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
                   }
                 }
               }
@@ -492,127 +488,6 @@
           }
         }
       }
-    },
-    "/api/upload/photo": {
-      "post": {
-        "tags": ["Photo Upload"],
-        "summary": "Upload sighting photo",
-        "description": "Upload a photo to R2 storage. Returns signed URL for use in sighting creation/update. Supports JPEG, PNG, WebP. Max 5MB.",
-        "operationId": "uploadPhoto",
-        "security": [
-          {
-            "sessionCookie": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "required": ["photo"],
-                "properties": {
-                  "photo": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "Image file (JPEG, PNG, or WebP)"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Photo uploaded successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["photo_url", "photo_format", "photo_size_bytes"],
-                  "properties": {
-                    "photo_url": {
-                      "type": "string",
-                      "format": "uri",
-                      "description": "Signed R2 URL (valid for 10 minutes)",
-                      "example": "https://pub-abc123.r2.dev/sighting-photos/xyz789/photo.jpg?X-Amz-Signature=..."
-                    },
-                    "photo_format": {
-                      "type": "string",
-                      "description": "MIME type of uploaded image",
-                      "enum": ["image/jpeg", "image/png", "image/webp"],
-                      "example": "image/jpeg"
-                    },
-                    "photo_size_bytes": {
-                      "type": "integer",
-                      "description": "File size in bytes",
-                      "example": 524288
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid file (wrong format or too large)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationError"
-                },
-                "examples": {
-                  "invalidFormat": {
-                    "value": {
-                      "error": "Only JPEG, PNG, WebP formats allowed",
-                      "field": "photo"
-                    }
-                  },
-                  "fileTooLarge": {
-                    "value": {
-                      "error": "File size must be under 5MB",
-                      "field": "photo"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not authenticated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "Upload to R2 failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                },
-                "example": {
-                  "error": "Failed to upload file to storage. Please try again."
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
   },
   "components": {
     "schemas": {
@@ -648,27 +523,8 @@
           "photo_url": {
             "type": "string",
             "nullable": true,
-            "description": "Signed R2 URL for photo (optional, expires in 10 minutes)",
-            "example": "https://pub-abc123.r2.dev/sighting-photos/sight001/photo.jpg?X-Amz-Signature=..."
-          },
-          "photo_format": {
-            "type": "string",
-            "nullable": true,
-            "description": "MIME type of photo",
-            "enum": ["image/jpeg", "image/png", "image/webp"],
-            "example": "image/jpeg"
-          },
-          "photo_size_bytes": {
-            "type": "integer",
-            "nullable": true,
-            "description": "Photo file size in bytes",
-            "example": 524288
-          },
-          "photo_uploaded_at": {
-            "type": "integer",
-            "nullable": true,
-            "description": "When photo was uploaded (Unix seconds)",
-            "example": 1707000000
+            "description": "Base64 data URL of photo (optional, frontend-converted)",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
           },
           "created_at": {
             "type": "integer",

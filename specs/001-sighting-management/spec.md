@@ -39,7 +39,7 @@ Users can create a new sighting with animal name, location, and auto-filled time
 2. **Given** sighting form is loaded, **When** form loads, **Then** current timestamp is automatically populated (user cannot edit)
 3. **Given** user has selected a photo file, **When** user submits form, **Then** photo is uploaded and associated with sighting
 4. **Given** user uploads a file that is not an image, **When** form validation runs, **Then** error displays "Only JPEG, PNG, WebP formats allowed"
-5. **Given** photo file exceeds 5MB, **When** user attempts to upload, **Then** error displays "File size must be under 5MB"
+5. **Given** photo file exceeds 2MB, **When** user attempts to upload, **Then** error displays "File size must be under 2MB"
 6. **Given** user leaves animal name blank, **When** user attempts to submit, **Then** validation error shows "Animal name is required"
 7. **Given** all required fields are filled, **When** user clicks submit, **Then** sighting is created and user sees success message with option to add another
 
@@ -102,9 +102,9 @@ Navigation bar contains persistent "Add Sighting" button. If user is not authent
 - **FR-004**: System MUST authenticate users via email/password sign-in
 - **FR-005**: System MUST maintain secure session state after sign-in (session persists across page refreshes)
 - **FR-006**: System MUST allow users to sign out and clear session
-- **FR-007**: System MUST allow users to create sightings with animal name, location, and auto-populated timestamp
-- **FR-008**: System MUST allow users to upload a single optional photo (JPEG, PNG, WebP)
-- **FR-009**: System MUST validate photo file size does not exceed 5MB
+- **FR-007**: System MUST allow users to create sightings with animal name, location, auto-populated timestamp, and optional photo (stored as base64 data URL in database row)
+- **FR-008**: System MUST allow users to upload a single optional photo (JPEG, PNG, WebP, max 2MB)
+- **FR-009**: System MUST validate photo file size does not exceed 2MB and convert valid images to base64 data URLs
 - **FR-010**: System MUST validate required fields (animal name, location) before sighting submission
 - **FR-011**: System MUST display user's dashboard showing list of all their sightings
 - **FR-012**: System MUST allow users to update existing sighting (name, location, photo)
@@ -155,7 +155,7 @@ Navigation bar contains persistent "Add Sighting" button. If user is not authent
 ## Assumptions
 
 1. **Authentication**: Email/password authentication is sufficient for MVP; OAuth2/social login deferred to future phase
-2. **Storage**: Photo files stored in cloud storage (e.g., Cloudflare R2, AWS S3); API returns signed URLs for retrieval
+2. **Storage**: Photo files converted to base64 data URLs on frontend and stored directly in sighting database row (no separate object storage)
 3. **Photo Format**: Only JPEG, PNG, WebP supported; GIF/BMP/SVG not supported for wildlife documentation (reduces storage/processing)
 4. **Timestamp**: Server-side timestamp used (not client-submitted) to ensure consistency and prevent user manipulation
 5. **Session**: Standard session-based authentication (not JWT); session stored server-side with secure HTTP-only cookie
@@ -180,6 +180,18 @@ All specifications above are self-contained with reasonable defaults applied. No
 - **A**: TypeScript for backend only (Cloudflare Workers); JavaScript for frontend (SolidJS)
   - **Rationale**: Backend APIs require type safety for contract validation (Zod + Chanfana). Frontend JavaScript reduces bundle size and build complexity without sacrificing safety (JSDoc + IDE type hints suffice for UI code).
   - **Implementation**: Cloudflare Worker endpoints in TypeScript; SolidJS components in JavaScript with optional JSDoc type hints for critical functions.
+
+### Photo Storage Architecture & Size Limit
+
+- **Q1**: Should photos be uploaded to object storage (R2) with separate endpoint, or stored in the database row?
+- **A1**: Store photos as base64 data URLs directly in the sighting database row (no separate object storage or upload endpoint)
+  - **Rationale**: Simplifies architecture (single POST /api/sightings endpoint instead of two); keeps all sighting data atomically in one row; reduces backend complexity during MVP. Trade-off: base64 encoding increases data size by ~33% (1.3x original file size). For MVP scope (<1000 concurrent users), acceptable.
+  - **Implementation**: Frontend converts image file to base64 string using FileReader API; includes data URL in photo_url field of POST /api/sightings request body. Remove separate POST /api/upload/photo endpoint.
+
+- **Q2**: What is the maximum photo file size allowed?
+- **A2**: Reduce from 5MB to 2MB maximum file size
+  - **Rationale**: Balances user experience (faster frontend conversion to base64) with database row size concerns. 2MB photo → ~2.6MB base64 string in database. Prevents excessive row bloat while still supporting high-quality wildlife photos.
+  - **Implementation**: Client-side validation rejects files >2MB before conversion; server-side validation rejects base64 strings >3MB as safety check.
 
 ---
 

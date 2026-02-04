@@ -9,7 +9,7 @@ Implement a complete wildlife sighting management platform with user authenticat
 
 **Primary Requirements**:
 - User authentication: email/password sign-up and sign-in with session persistence
-- Sighting creation: form with animal name, location, auto-timestamp, optional photo (JPEG/PNG/WebP, max 5MB)
+- Sighting creation: form with animal name, location, auto-timestamp, optional photo (JPEG/PNG/WebP, max 2MB, stored as base64 data URL in database)
 - Dashboard: list user's sightings sorted by date (newest first) with edit/delete capabilities
 - Navigation: persistent "Add Sighting" button with auth-aware routing
 - Validation: form field validation with clear, positioned error messages
@@ -23,20 +23,19 @@ Implement a complete wildlife sighting management platform with user authenticat
 **Primary Dependencies**:
 - Frontend: SolidJS 1.x + Vite 7.x for bundling and HMR (JavaScript, JSDoc for type hints)
 - Backend: Cloudflare Workers (Hono 4.x + Chanfana 2.x for OpenAPI, TypeScript)
-- Database: Cloudflare D1 (SQLite edge database)
+- Database: Cloudflare D1 (SQLite edge database with base64 photo storage)
 - Auth: Session-based (HTTP-only cookies via Workers KV for session store)
-- Storage: Cloudflare R2 (object storage for photo uploads)
 
 **Storage**: Cloudflare D1 SQLite database (users, sightings tables)  
+**Testing**: Tests NOT created per constitution (Testing Expectatio with embedded base64 photos)  
 **Testing**: Tests NOT created per constitution (Testing Expectations section)  
-**Target Platform**: Web browser + Cloudflare edge infrastructure (workers + D1 + R2)  
+**Target Platform**: Web browser + Cloudflare edge infrastructure (workers + D1)  
 **Project Type**: Full-stack web application (frontend + backend)  
 **Performance Goals**:
 - Sign-in: 95% complete within 500ms
 - Dashboard load: <1 second
 - Form validation: <100ms response
-- Photo upload: <2 seconds for 5MB on 3G
-
+- Photo conversion & save: <2 seconds for 2
 **Constraints**:
 - End-to-end workflow: <3 minutes (sign-up → sign-in → create sighting → view dashboard)
 - Frontend bundle: ≤500KB gzipped
@@ -57,7 +56,7 @@ Implement a complete wildlife sighting management platform with user authenticat
 - [x] **API Contract Integrity**: OpenAPI 3.1 schema defined via Chanfana; semantic versioning (v1.0.0); breaking changes require MAJOR bump
 - [x] **UX Consistency**: Interactive elements have visual feedback (hover/focus states); forms validate with error messages positioned near fields; loading indicators shown
 - [x] **Progressive Enhancement**: Core homepage renders without JavaScript; sighting form submits via standard multipart/form-data HTTP POST; auth via secure cookies
-- [x] **Developer Simplicity**: Zero external dependencies beyond SolidJS/Hono (no additional frameworks); config files documented; one-command setup: `pnpm install && pnpm dev`
+- [x] **Developer Simplicity**: Zero external dependencies beyond SolidJS/Hono (no additional frameworks); config files documented; one-command setup: `npm install && npm dev`
 
 **All gates PASS** - No violations. No complexity tracking needed.
 
@@ -95,13 +94,11 @@ cloudflare-worker/                  ← Backend (TypeScript)
 │       │   ├── signin.ts            # POST /api/auth/signin
 │       │   └── signout.ts           # POST /api/auth/signout
 │       ├── sightings/
-│       │   ├── create.ts            # POST /api/sightings (with photo upload)
+│       │   ├── create.ts            # POST /api/sightings (photo as base64 data URL in body)
 │       │   ├── list.ts              # GET /api/sightings
 │       │   ├── get.ts               # GET /api/sightings/:id
 │       │   ├── update.ts            # PATCH /api/sightings/:id
 │       │   └── delete.ts            # DELETE /api/sightings/:id
-│       └── upload/
-│           └── photo.ts             # POST /api/upload/photo (returns signed R2 URL)
 ├── middleware/
 │   ├── auth.ts                      # Session verification middleware
 │   └── validation.ts                # Request validation (Zod schemas)
@@ -110,7 +107,7 @@ cloudflare-worker/                  ← Backend (TypeScript)
 │   └── migrations/
 │       ├── 001_init.sql             # Create users, sightings tables
 │       └── 002_add_soft_delete.sql  # Add deleted_at column
-└── wrangler.jsonc                   # Workers config (D1 binding, R2 binding, KV binding)
+└── wrangler.jsonc                   # Workers config (D1 binding, KV binding)
 
 solidjs/                            ← Frontend (JavaScript)
 ├── src/
@@ -148,7 +145,7 @@ solidjs/                            ← Frontend (JavaScript)
 │   └── services/
 │       ├── api.js                   # API client functions (fetch with error handling)
 │       ├── auth.js                  # Auth service (login, logout, session check)
-│       ├── sightings.js             # Sightings service (CRUD API calls)
+│   ├── sightings.js             # Sightings service (CRUD API calls with photo base64 handling)
 │       └── storage.js               # Local storage helpers (session, form state)
 ├── vite.config.js                   # Vite config with SolidJS plugin
 └── jsconfig.json                    # JS config (paths, strict mode)

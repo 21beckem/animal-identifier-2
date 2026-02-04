@@ -55,17 +55,14 @@ CREATE TABLE sightings (
   animal_name TEXT NOT NULL,                                  -- e.g., "Eastern Bluebird"
   location TEXT NOT NULL,                                     -- e.g., "Central Park, NYC"
   timestamp_sighted INTEGER NOT NULL,                         -- When animal was spotted (Unix seconds)
-  photo_url TEXT,                                             -- Signed R2 URL (optional)
-  photo_format TEXT,                                          -- MIME type: "image/jpeg", "image/png", "image/webp"
-  photo_size_bytes INTEGER,                                   -- File size in bytes (for validation)
-  photo_uploaded_at INTEGER,                                  -- When photo was uploaded (Unix seconds)
+  photo_url TEXT,                                             -- Base64 data URL (optional, e.g., "data:image/jpeg;base64,/9j/4AAQSkZJRg...")
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),          -- Record creation time
   updated_at INTEGER NOT NULL DEFAULT (unixepoch()),          -- Last update time
   deleted_at INTEGER,                                         -- Soft delete flag
   
   FOREIGN KEY (user_id) REFERENCES users(id),
-  CHECK (photo_url IS NULL OR photo_url LIKE 'https://%'),  -- R2 URLs must be HTTPS
-  CHECK (photo_size_bytes IS NULL OR photo_size_bytes <= 5242880) -- 5MB max
+  CHECK (photo_url IS NULL OR photo_url LIKE 'data:image/%'),  -- Base64 data URLs only
+  CHECK (photo_url IS NULL OR length(photo_url) <= 2900000)    -- ~2MB max (base64 is 1.33x original size)
 );
 
 CREATE INDEX idx_sightings_user_id ON sightings(user_id, deleted_at, created_at DESC);
@@ -80,9 +77,7 @@ CREATE UNIQUE INDEX idx_sightings_id_user_id ON sightings(id, user_id); -- for o
 - `location`: User-entered location where animal was spotted. Required. Freeform text (no strict geocoding).
 - `timestamp_sighted`: Server-determined timestamp when animal was observed. Immutable. Set server-side from request arrival time (not user input).
 - `photo_url`: Signed R2 storage URL (e.g., `https://pub-abc123.r2.dev/sightings/xyz/photo.jpg?X-Amz-Signature=...`). Includes expiry (10 min). Optional.
-- `photo_format`: MIME type string ("image/jpeg", "image/png", "image/webp"). Only set if photo_url is set.
-- `photo_size_bytes`: File size in bytes. Only set if photo_url is set. Validated at 5MB max.
-- `photo_uploaded_at`: Timestamp when photo file was uploaded to R2. Only set if photo_url is set.
+- `photo_url`: Base64 data URL (e.g., `data:image/jpeg;base64,/9j/4AAQSkZJRg...`). Stored directly in database row, no separate object storage. Optional.
 - `created_at`: Sighting record creation time. Set server-side, immutable.
 - `updated_at`: Last modified timestamp. Updated on every PATCH operation.
 - `deleted_at`: Soft delete flag. Null while visible. Set when user deletes sighting.
@@ -91,8 +86,7 @@ CREATE UNIQUE INDEX idx_sightings_id_user_id ON sightings(id, user_id); -- for o
 - animal_name: 1-200 characters (prevents empty strings, limits to reasonable wildlife names)
 - location: 1-500 characters
 - timestamp_sighted: <= current server time (cannot be future-dated)
-- photo_url: HTTPS protocol only; signed R2 URLs follow pattern
-- photo_size_bytes: 0-5242880 (5MB), only set if photo exists
+- photo_url: Base64 data URL format only; length ≤ 2.9MB (~2MB original file size after base64 encoding)
 - deleted_at: Only set to server time; never manually edited
 
 **Access Patterns**:

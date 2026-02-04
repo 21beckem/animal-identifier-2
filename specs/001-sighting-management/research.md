@@ -310,48 +310,56 @@ const SignUpRequest = z.object({
 
 ---
 
-## Photo Storage: Cloudflare R2 Decision
+## Photo Storage: Base64 Data URL in Database Decision
 
-### Why R2 (not direct database)?
+### Why Base64 Data URLs (not object storage)?
 
-**Why Not Store Photos in Database**:
-- Large BLOBs (5MB photos) bloat database size
-- Slows query performance (bandwidth to retrieve photos)
-- Difficult to scale (database becomes IO bottleneck)
+**Simplified Architecture**:
+- **Single Endpoint**: POST /api/sightings includes photo data in request body (no separate upload endpoint)
+- **Atomic Writes**: Photo and metadata stored in same database row (no orphaned files possible)
+- **Easier Testing**: Photos included in test fixtures without external dependencies
+- **Frontend Responsibility**: Browser handles file → base64 conversion (CPU shift from server)
 
-**Why R2**:
-- **Object Storage**: Designed for files; unlimited scale
-- **Integrated with Workers**: Signed URLs generated in same request context
-- **Cost**: $0.015/GB storage (vs. $0.0256/GB for backups)
-- **Signed URLs**: URLs expire after 10 minutes (security)
-- **Cleanup on Delete**: Can schedule async cleanup of orphaned objects (P2)
+**Trade-offs Accepted**:
+- **Data Size**: Base64 encoding increases size ~33% (1.33x original). 2MB photo → ~2.6MB base64 string in database
+- **Query Performance**: Large BLOB data in result sets (mitigated by explicit SELECT columns in queries)
+- **Bandwidth**: All photo data travels through HTTP request/response (vs. separate download stream)
 
-### Photo Upload Flow
+**Why 2MB Limit**:
+- Balances reasonable wildlife photo quality with database row size
+- 2MB original → ~2.6MB base64 string; keeps individual records ≤3MB
+- Database row limits (SQLite): typically ≥10MB practical limit, but smaller rows = faster queries
+- D1 pricing: $0.50/10GB/month; at 2.6MB average, storage cost negligible vs. complexity reduction
 
-1. Browser compresses and validates photo locally (JPEG/PNG/WebP, <5MB)
-2. POST `/api/upload/photo` multipart → backend validates again → upload to R2 with unique key
-3. R2 returns: object_id
-4. Generate signed URL: `https://pub-{bucket}.r2.dev/sighting-photos/{sighting_id}/photo.jpg?X-Amz-Signature=...&X-Amz-Expires=600`
-5. Signed URL included in sighting creation payload → stored in D1
-6. Frontend displays photo using signed URL (valid for 10 minutes)
+### Photo Handling Flow (Frontend → Backend)
+
+1. Browser user selects image file (JPEG/PNG/WebP, client validates <2MB)
+2. Frontend uses FileReader API to convert File → base64 string: `data:image/jpeg;base64,/9j/4AAQSkZJ...`
+3. POST /api/sightings with photo_url field set to base64 data URL string
+4. Backend validates: base64 string length ≤3MB, format matches `data:image/*;base64,...`
+5. Backend stores photo_url directly in sightings table
+6. Frontend displays photo by setting `<img src={photoUrl}>` (browsers natively support data: URLs)
 
 ### Alternatives Considered
 
-**AWS S3**:
-- ✅ Industry standard, massive ecosystem
-- ❌ Different authentication model
-- ❌ Higher operational overhead (AWS account setup)
+**Cloudflare R2 with Signed URLs** (original design):
+- ✅ Keeps database lean; scales to terabytes
+- ✅ Separate upload stream (better performance on mobile)
+- ✅ CDN edge caching of photos
+- ❌ Requires separate endpoint (two API calls)
+- ❌ Risk of orphaned objects if sighting deleted before upload completes
+- ❌ Adds R2 operational complexity (bucket config, TTL cleanup, cleanup costs)
+- **Rejected for MVP**: Unnecessary complexity when single atomic endpoint works
+
+**AWS S3 Pre-Signed URLs**:
+- ✅ Industry standard
+- ❌ Requires AWS account setup beyond Cloudflare ecosystem
 
 **Firebase Cloud Storage**:
-- ✅ Easy integration with Firebase Auth
-- ❌ Limited to Firebase ecosystem
-- ❌ Pricing less transparent
+- ✅ Integrated auth
+- ❌ Requires Google account (mismatch with email/password auth)
 
-**Base64 in Database**:
-- ❌ Bloats database, terrible performance
-- ❌ No CDN caching of images
-
-**Decision**: **Cloudflare R2** integrates with Workers platform and keeps database lean.
+**Decision**: **Base64 data URLs in D1** for MVP simplicity + atomicity. Future: migrate to R2 if storage volume justifies (P2 enhancement).
 
 ---
 
