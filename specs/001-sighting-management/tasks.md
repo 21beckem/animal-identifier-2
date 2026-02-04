@@ -57,18 +57,18 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Setup Tasks
 
-- [ ] T001 Initialize Cloudflare Worker backend project in `cloudflare-worker/` with wrangler, Hono, Chanfana, Zod, bcryptjs
-- [ ] T002 Initialize SolidJS frontend project in `solidjs/` with Vite, SolidJS, JSDoc configuration
-- [ ] T003 Create git feature branch `001-sighting-management` if not already created, verify branch exists
-- [ ] T004 Configure `cloudflare-worker/.env.local` with D1 database ID, KV namespace ID, session TTL settings
-- [ ] T005 Configure `solidjs/.env.local` with API_BASE_URL pointing to local Cloudflare Workers dev server
-- [ ] T006 Create `cloudflare-worker/wrangler.jsonc` with D1 and KV bindings (remove any R2 references)
-- [ ] T007 Create `cloudflare-worker/tsconfig.json` with strict mode enabled (type safety per constitution)
-- [ ] T008 Create `solidjs/jsconfig.json` with path aliases for components, pages, services directories
-- [ ] T009 Verify `npm install` runs successfully in both frontend and backend directories
-- [ ] T010 Verify `npm dev` runs successfully in backend; outputs local worker URL (http://localhost:8787)
-- [ ] T011 Verify `npm dev` runs successfully in frontend; outputs Vite dev server URL (http://localhost:5173)
-- [ ] T012 Commit setup to feature branch with message "setup: initialize backend and frontend projects"
+- [X] T001 Initialize Cloudflare Worker backend project in `cloudflare-worker/` with wrangler, Hono, Chanfana, Zod, bcryptjs
+- [X] T002 Initialize SolidJS frontend project in `solidjs/` with Vite, SolidJS, JSDoc configuration
+- [X] T003 Create git feature branch `001-sighting-management` if not already created, verify branch exists
+- [X] T004 Configure `cloudflare-worker/.env.local` with D1 database ID, KV namespace ID, session TTL settings
+- [X] T005 Configure `solidjs/.env.local` with API_BASE_URL pointing to local Cloudflare Workers dev server
+- [X] T006 Create `cloudflare-worker/wrangler.jsonc` with D1 and KV bindings (remove any R2 references)
+- [X] T007 Create `cloudflare-worker/tsconfig.json` with strict mode enabled (type safety per constitution)
+- [X] T008 Create `solidjs/jsconfig.json` with path aliases for components, pages, services directories
+- [X] T009 Verify `npm install` runs successfully in both frontend and backend directories
+- [X] T010 Verify `npm dev` runs successfully in backend; outputs local worker URL (http://localhost:8787)
+- [X] T011 Verify `npm dev` runs successfully in frontend; outputs Vite dev server URL (http://localhost:5173)
+- [X] T012 Commit setup to feature branch with message "setup: initialize backend and frontend projects"
 
 ---
 
