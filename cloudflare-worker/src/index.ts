@@ -1,9 +1,7 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
-import { TaskCreate } from "./endpoints/taskCreate";
-import { TaskDelete } from "./endpoints/taskDelete";
-import { TaskFetch } from "./endpoints/taskFetch";
-import { TaskList } from "./endpoints/taskList";
+import { runMigrations } from "./db/migrate";
+import { seedDatabase } from "./db/seed";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -13,14 +11,42 @@ const openapi = fromHono(app, {
 	docs_url: "/",
 });
 
-// Register OpenAPI endpoints
-openapi.get("/api/tasks", TaskList);
-openapi.post("/api/tasks", TaskCreate);
-openapi.get("/api/tasks/:taskSlug", TaskFetch);
-openapi.delete("/api/tasks/:taskSlug", TaskDelete);
+// TODO: Register auth and sighting endpoints (Phase 3+)
+// Old task endpoints removed - will be replaced with:
+// - POST /api/auth/signup
+// - POST /api/auth/signin
+// - POST /api/auth/signout
+// - GET /api/sightings
+// - POST /api/sightings
+// - GET /api/sightings/:id
+// - PATCH /api/sightings/:id
+// - DELETE /api/sightings/:id
 
-// You may also register routes for non OpenAPI directly on Hono
-// app.get('/test', (c) => c.text('Hono!'))
+// Health check endpoint
+app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));
+
+// Migration endpoint (manual trigger for dev/prod)
+app.post('/api/migrate', async (c) => {
+	try {
+		const count = await runMigrations(c.env.DB);
+		return c.json({ success: true, migrationsApplied: count });
+	} catch (error) {
+		console.error('Migration failed:', error);
+		return c.json({ success: false, error: String(error) }, 500);
+	}
+});
+
+// Seed endpoint (dev only - manual trigger)
+app.post('/api/seed', async (c) => {
+	try {
+		const result = await seedDatabase(c.env.DB);
+		return c.json({ success: true, ...result });
+	} catch (error) {
+		console.error('Seed failed:', error);
+		return c.json({ success: false, error: String(error) }, 500);
+	}
+});
 
 // Export the Hono app
 export default app;
+

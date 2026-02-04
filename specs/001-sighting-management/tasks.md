@@ -88,12 +88,13 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Database & Migration Tasks
 
-- [ ] T013 [P] Create `cloudflare-worker/src/db/schema.ts` with TypeScript definitions for users, sightings, sessions tables (matching D1 schema from data-model.md)
-- [ ] T014 [P] Create `cloudflare-worker/src/db/migrations/001_init.sql` with CREATE TABLE statements for users, sightings, indexes per data-model.md
-- [ ] T015 [P] Create `cloudflare-worker/src/db/migrations/002_add_soft_delete.sql` (or include in 001_init.sql) to add deleted_at columns
-- [ ] T016 [P] Implement D1 migration runner function in `cloudflare-worker/src/db/migrate.ts` to run .sql files in order
-- [ ] T017 [P] Verify migrations run on worker startup; test local D1 database has tables with correct schema
-- [ ] T018 [P] Create database seeding function (optional for tests) in `cloudflare-worker/src/db/seed.ts` with sample users and sightings
+- [X] T013 [P] Create `cloudflare-worker/src/db/schema.ts` with TypeScript definitions for users, sightings, sessions tables (matching D1 schema from data-model.md)
+- [X] T014 [P] Create `cloudflare-worker/src/db/migrations/001_init.sql` with CREATE TABLE statements for users, sightings, indexes per data-model.md
+- [X] T015 [P] Create `cloudflare-worker/src/db/migrations/002_add_soft_delete.sql` (or include in 001_init.sql) to add deleted_at columns
+- [X] T016 [P] Implement D1 migration runner function in `cloudflare-worker/src/db/migrate.ts` to run .sql files in order
+- [X] T017 [P] Verify migrations run on worker startup; test local D1 database has tables with correct schema
+- [X] T018 [P] Create database seeding function (optional for tests) in `cloudflare-worker/src/db/seed.ts` with sample users and sightings
+
 
 ### Type & Schema Definitions
 
