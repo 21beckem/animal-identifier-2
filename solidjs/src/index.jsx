@@ -54,8 +54,21 @@ function ProtectedRoute(props) {
 }
 
 /**
+ * Layout Component
+ * Renders Navbar and page content (only inside Router context)
+ */
+function Layout(props) {
+	return (
+		<div class="page">
+			<Navbar user={props.user()} setUser={props.setUser} />
+			<main class="page-content">{props.children}</main>
+		</div>
+	);
+}
+
+/**
  * Main App Component
- * Wraps all routes with error boundary, nav bar, and layout
+ * Wraps all routes with error boundary, Router, and layout
  */
 function App() {
 	const [user, setUser] = createSignal(null);
@@ -78,60 +91,21 @@ function App() {
 
 	return (
 		<ErrorBoundary>
-			<div class="page">
-				<Navbar user={user()} setUser={setUser} />
-
-				<main class="page-content">
-					<Router>
-						<Route path="/" component={Home} />
-						<Route path="/signup" component={Auth} />
-						<Route path="/signin" component={Auth} />
-						<Route path="/dashboard" component={UserDashboard} />
-						<Route path="/create-sighting" component={CreateSighting} />
-						<Route path="/sightings/:id/edit" component={EditSighting} />
-					</Router>
-				</main>
-			</div>
+			<Router>
+				<Layout user={user} setUser={setUser}>
+					<Route path="/" component={Home} />
+					<Route path="/signup" component={Auth} />
+					<Route path="/signin" component={Auth} />
+					<Route path="/dashboard" component={UserDashboard} />
+					<Route path="/create-sighting" component={CreateSighting} />
+					<Route path="/sightings/:id/edit" component={EditSighting} />
+				</Layout>
+			</Router>
 		</ErrorBoundary>
 	);
 }
 
 export default App;
 
-const HowItWorks = () => (
-  <section className="section" aria-labelledby="how-title">
-    <div className="container">
-      <h2 id="how-title" className="section__title">How It Works</h2>
-
-      <div className="steps">
-        <article className="step">
-          <div className="step__num" aria-hidden="true">1</div>
-          <h3 className="step__title">Sign Up</h3>
-          <p className="step__text">Create your free account in seconds</p>
-        </article>
-
-        <article className="step">
-          <div className="step__num" aria-hidden="true">2</div>
-          <h3 className="step__title">Record a Sighting</h3>
-          <p className="step__text">Add animal details, photos, and location</p>
-        </article>
-
-        <article className="step">
-          <div className="step__num" aria-hidden="true">3</div>
-          <h3 className="step__title">Build Your Journal</h3>
-          <p className="step__text">Track your wildlife observations over time</p>
-        </article>
-      </div>
-    </div>
-  </section>
-);
-
-mount(() => (
-  <Page>
-    <Navbar />
-    <Hero />
-    <Features />
-    <HowItWorks />
-    <Footer />
-  </Page>
-));
+// Mount the app to the DOM
+mount(App, 'root');

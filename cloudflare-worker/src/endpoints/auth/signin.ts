@@ -34,7 +34,7 @@ signinRoute.post('/api/auth/signin', async (c: AppContext) => {
 			'SELECT id, email, password_hash, created_at FROM users WHERE LOWER(email) = LOWER(?) AND deleted_at IS NULL LIMIT 1'
 		)
 			.bind(data.email)
-			.first();
+			.first() as any;
 
 		if (!user) {
 			return c.json(
@@ -44,7 +44,7 @@ signinRoute.post('/api/auth/signin', async (c: AppContext) => {
 		}
 
 		// Compare password hash
-		const passwordMatch = await bcrypt.compare(data.password, user.password_hash);
+		const passwordMatch = await bcrypt.compare(data.password, String(user.password_hash));
 		if (!passwordMatch) {
 			return c.json(
 				{ error: 'Invalid email or password' },
@@ -53,7 +53,7 @@ signinRoute.post('/api/auth/signin', async (c: AppContext) => {
 		}
 
 		// Create session in KV
-		const sessionId = await setSession(c.env.SESSIONS, user.id);
+		const sessionId = await setSession(c.env.SESSIONS, String(user.id));
 
 		// Set session cookie (HTTP-only, Secure, SameSite=Strict)
 		setSessionCookie(c, sessionId);

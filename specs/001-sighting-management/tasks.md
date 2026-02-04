@@ -151,7 +151,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Backend: Authentication Endpoints
 
-- [ ] T040 [US1] Create `cloudflare-worker/src/endpoints/auth/signup.ts`: POST /api/auth/signup handler
+- [X] T040 [US1] Create `cloudflare-worker/src/endpoints/auth/signup.ts`: POST /api/auth/signup handler
   - Validates email format (Zod schema)
   - Validates password strength (8+ chars, 1 uppercase, Zod schema)
   - Checks for duplicate email (query D1 users table)
@@ -160,7 +160,7 @@ Phase 7 (Polish & Cross-Cutting)
   - Returns 201 with user object (id, email, created_at)
   - Error responses: 400 validation, 409 duplicate email, 500 server error
 
-- [ ] T041 [US1] Create `cloudflare-worker/src/endpoints/auth/signin.ts`: POST /api/auth/signin handler
+- [X] T041 [US1] Create `cloudflare-worker/src/endpoints/auth/signin.ts`: POST /api/auth/signin handler
   - Validates email, password format (Zod)
   - Queries D1 for user by email
   - Compares password hash with bcryptjs.compare()
@@ -170,24 +170,24 @@ Phase 7 (Polish & Cross-Cutting)
   - Returns 200 with user object (id, email, created_at, last_login_at)
   - Error responses: 400 validation, 401 invalid credentials, 500 server error
 
-- [ ] T042 [US1] Create `cloudflare-worker/src/endpoints/auth/signout.ts`: POST /api/auth/signout handler
+- [X] T042 [US1] Create `cloudflare-worker/src/endpoints/auth/signout.ts`: POST /api/auth/signout handler
   - Validates session from cookie
   - Deletes session from KV
   - Clears HTTP-only cookie (Set-Cookie with max-age=0)
   - Returns 204 No Content or 200 with success message
   - Error responses: 401 not authenticated, 500 server error
 
-- [ ] T043 [US1] Create `cloudflare-worker/src/endpoints/auth/me.ts`: GET /api/auth/me handler
+- [X] T043 [US1] Create `cloudflare-worker/src/endpoints/auth/me.ts`: GET /api/auth/me handler
   - Validates session from middleware
   - Queries D1 for current user by user_id
   - Returns 200 with user object
   - Error responses: 401 not authenticated, 500 server error
 
-- [ ] T044 [US1] Create `cloudflare-worker/src/index.ts` main app setup: register auth endpoints with Hono, mount OpenAPI routes, configure CORS
+- [X] T044 [US1] Create `cloudflare-worker/src/index.ts` main app setup: register auth endpoints with Hono, mount OpenAPI routes, configure CORS
 
 ### Frontend: Authentication Components & Forms
 
-- [ ] T045 [US1] [P] Create `solidjs/src/components/SignUp/comp.jsx` with signup form
+- [X] T045 [US1] [P] Create `solidjs/src/components/SignUp/comp.jsx` with signup form
   - Input fields: email, password, confirmPassword
   - Real-time validation feedback (below each field)
   - Password strength indicator (e.g., "Password strength: Strong")
@@ -196,6 +196,13 @@ Phase 7 (Polish & Cross-Cutting)
   - Success message on signup
   - Link to sign-in page
   - File: `solidjs/src/components/SignUp/style.css` with form styling
+
+- [X] T045.5 [US1] Fix Router context error in `solidjs/src/index.jsx`
+  - Move Navbar inside Router component boundary to enable useNavigate() hook usage
+  - Create Layout wrapper component inside Router
+  - Remove conflicting old code (mount, HowItWorks, Page/Hero/Features references)
+  - Add proper mount() call to render app to DOM
+  - Verify app renders without "router primitives" error
 
 - [ ] T046 [US1] [P] Create `solidjs/src/components/SignIn/comp.jsx` with signin form
   - Input fields: email, password

@@ -47,7 +47,7 @@ app.post('/api/migrate', async (c) => {
 app.post('/api/seed', async (c) => {
 	try {
 		const result = await seedDatabase(c.env.DB);
-		return c.json({ success: true, ...result });
+		return c.json({ success: true, usersCreated: result.usersCreated, sightingsCreated: result.sightingsCreated });
 	} catch (error) {
 		console.error('Seed failed:', error);
 		return c.json({ success: false, error: String(error) }, 500);
@@ -56,8 +56,8 @@ app.post('/api/seed', async (c) => {
 // Seed endpoint to clear all data (dev only)
 app.post('/api/seed/clear', async (c) => {
 	try {
-		const result = await clearDatabase(c.env.DB);
-		return c.json({ success: true, ...result });
+		await clearDatabase(c.env.DB);
+		return c.json({ success: true, message: 'Database cleared' });
 	} catch (error) {
 		console.error('Seed failed:', error);
 		return c.json({ success: false, error: String(error) }, 500);
