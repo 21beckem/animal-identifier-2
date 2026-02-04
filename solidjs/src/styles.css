@@ -1,0 +1,200 @@
+:root {
+  --bg: #ffffff;
+  --text: #24302a;
+  --muted: #6b736f;
+  --surface: #ffffff;
+  --surface-2: #f6f4ef;
+  --border: rgba(15, 23, 42, 0.10);
+
+  --primary: #2f6b2f;
+  --primary-2: #245224;
+
+  --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    "Noto Sans", "Liberation Sans", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: min(1100px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 120ms ease, background-color 120ms ease,
+    border-color 120ms ease, color 120ms ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn--primary:hover {
+  background: var(--primary-2);
+}
+
+.btn--secondary {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1f2937;
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn--secondary:hover {
+  background: #fff;
+}
+
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  height: 60vh;
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 120px 0 80px;
+  background-image:
+    linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.25)
+    ),
+    url("./img/deer-hero.jpg");
+  background-size: cover;
+  background-position: center;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.hero__content h1 {
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 46px);
+  letter-spacing: -0.3px;
+}
+
+.hero__content p {
+  margin: 12px auto 0;
+  max-width: 640px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+}
+
+.hero__actions {
+  margin-top: 18px;
+  display: inline-flex;
+  gap: 10px;
+}
+
+/* Sections */
+.section {
+  padding: 56px 0;
+}
+
+.section--muted {
+  background: var(--surface-2);
+}
+
+.section__title {
+  margin: 0 0 28px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(17, 24, 39, 0.72);
+}
+
+/* Steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  align-items: start;
+  justify-items: center;
+}
+
+.step {
+  text-align: center;
+  max-width: 260px;
+}
+
+.step__num {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  margin: 0 auto 10px;
+}
+
+.step__title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.86);
+}
+
+.step__text {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 110px 0 70px;
+  }
+}

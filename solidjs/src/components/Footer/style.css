@@ -1,0 +1,33 @@
+/* Footer */
+.footer {
+  background: #2b2f2d;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 22px 0;
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer__links {
+  display: flex;
+  gap: 14px;
+}
+
+.footer__link {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+}
+
+.footer__link:hover {
+  color: #fff;
+}
+
+.footer__copy {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+}

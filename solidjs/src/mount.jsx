@@ -1,8 +1,8 @@
 import { render } from 'solid-js/web';
 import 'solid-devtools';
 
-export default function mount(App) {
-    const root = document.getElementById('root');
+export default function mount(App, rootId='root') {
+    const root = document.getElementById(rootId);
     
     if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
         throw new Error(
