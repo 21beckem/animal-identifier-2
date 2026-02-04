@@ -4,5 +4,51 @@
   "compatibility_date": "2026-01-01",
   "observability": {
     "enabled": true
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sighting-dev",
+      "database_id": "YOUR_D1_DATABASE_ID",
+      "migrations_dir": "src/db/migrations",
+      "preview_database_id": "YOUR_PREVIEW_D1_DATABASE_ID"
+    }
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "YOUR_KV_NAMESPACE_ID",
+      "preview_id": "YOUR_KV_PREVIEW_ID"
+    }
+  ],
+
+  "env": {
+    "development": {
+      "vars": {
+        "ENVIRONMENT": "development",
+        "SESSION_TTL": "604800"
+      }
+    },
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production",
+        "SESSION_TTL": "604800"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "sighting-prod",
+          "database_id": "YOUR_PROD_D1_DATABASE_ID"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "SESSIONS",
+          "id": "YOUR_PROD_KV_NAMESPACE_ID"
+        }
+      ]
+    }
   }
 }
