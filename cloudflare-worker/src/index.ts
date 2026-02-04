@@ -7,6 +7,11 @@ import { signupRoute } from "./endpoints/auth/signup";
 import { signinRoute } from "./endpoints/auth/signin";
 import { signoutRoute } from "./endpoints/auth/signout";
 import { meRoute } from "./endpoints/auth/me";
+import { createSightingRoute } from "./endpoints/sightings/create";
+import { listSightingsRoute } from "./endpoints/sightings/list";
+import { getSightingRoute } from "./endpoints/sightings/get";
+import { updateSightingRoute } from "./endpoints/sightings/update";
+import { deleteSightingRoute } from "./endpoints/sightings/delete";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -22,12 +27,12 @@ app.route('/', signinRoute);
 app.route('/', signoutRoute);
 app.route('/', meRoute);
 
-// TODO: Register sighting endpoints (Phase 4+)
-// - POST /api/sightings (create)
-// - GET /api/sightings (list)
-// - GET /api/sightings/:id (get)
-// - PATCH /api/sightings/:id (update)
-// - DELETE /api/sightings/:id (delete)
+// Register sighting endpoints
+app.route('/', createSightingRoute);
+app.route('/', listSightingsRoute);
+app.route('/', getSightingRoute);
+app.route('/', updateSightingRoute);
+app.route('/', deleteSightingRoute);
 
 // Health check endpoint
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));

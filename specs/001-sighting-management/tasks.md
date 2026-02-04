@@ -268,7 +268,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Backend: Sighting Creation Endpoint
 
-- [ ] T058 [US2] Create `cloudflare-worker/src/endpoints/sightings/create.ts`: POST /api/sightings handler
+- [X] T058 [US2] Create `cloudflare-worker/src/endpoints/sightings/create.ts`: POST /api/sightings handler
   - Validates session from middleware (must be authenticated)
   - Validates request body (Zod schema):
     - animal_name: required, 1-200 chars
@@ -340,13 +340,13 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Backend: Sightings List & Detail Endpoints
 
-- [ ] T071 [US3] Create `cloudflare-worker/src/endpoints/sightings/list.ts`: GET /api/sightings handler
+- [X] T071 [US3] Create `cloudflare-worker/src/endpoints/sightings/list.ts`: GET /api/sightings handler
   - Validates session (authenticated)
   - Queries D1: SELECT * FROM sightings WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC
   - Returns 200 with array of sighting objects
   - Optional pagination (limit, offset) in query params for future, not required for MVP
 
-- [ ] T072 [US3] Create `cloudflare-worker/src/endpoints/sightings/get.ts`: GET /api/sightings/:id handler
+- [X] T072 [US3] Create `cloudflare-worker/src/endpoints/sightings/get.ts`: GET /api/sightings/:id handler
   - Validates session
   - Queries D1 for sighting by id and user_id (ownership check)
   - Returns 404 if not found or not owned by user
@@ -354,7 +354,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Backend: Update & Delete Endpoints
 
-- [ ] T073 [US3] Create `cloudflare-worker/src/endpoints/sightings/update.ts`: PATCH /api/sightings/:id handler
+- [X] T073 [US3] Create `cloudflare-worker/src/endpoints/sightings/update.ts`: PATCH /api/sightings/:id handler
   - Validates session
   - Validates request body (Zod): animal_name (optional), location (optional), photo_url (optional)
   - Checks ownership (user_id matches)
@@ -362,7 +362,7 @@ Phase 7 (Polish & Cross-Cutting)
   - Returns 200 with updated sighting object
   - Error responses: 400 validation, 401 not authenticated, 403 not owner, 404 not found, 500 server error
 
-- [ ] T074 [US3] Create `cloudflare-worker/src/endpoints/sightings/delete.ts`: DELETE /api/sightings/:id handler
+- [X] T074 [US3] Create `cloudflare-worker/src/endpoints/sightings/delete.ts`: DELETE /api/sightings/:id handler
   - Validates session
   - Checks ownership
   - Soft delete: UPDATE sightings SET deleted_at=unixepoch() WHERE id=? AND user_id=?
