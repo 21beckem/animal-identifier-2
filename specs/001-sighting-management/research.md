@@ -1,0 +1,453 @@
+# Research Summary: Sighting Management System
+
+**Feature**: `001-sighting-management`  
+**Created**: 2026-02-04  
+**Purpose**: Document technology stack decisions and research findings
+
+---
+
+## Tech Stack Overview
+
+| Layer | Choice | Rationale |
+|-------|--------|-----------|
+| Frontend | SolidJS 1.x + Vite 7.x | Fine-grained reactivity, small bundle size (~10KB), existing in repo |
+| Backend | Cloudflare Workers + Hono 4.x | Zero cold-start edge compute, integrated platform, existing in repo |
+| Database | Cloudflare D1 (SQLite) | Edge database, local dev experience, integrated with Workers |
+| Session Store | Cloudflare KV | Fast (<10ms), auto-expiring keys, prevents centralized DB queries |
+| Photo Storage | Cloudflare R2 | Object storage, signed URLs, integrated with Workers |
+| Auth Method | Session-based (HTTP-only cookies) | Simple, XSS-resistant, server-side invalidation on sign-out |
+| Password Hashing | bcryptjs (cost 12) | Industry standard, ~250ms per hash, prevents rainbow tables |
+| API Framework | Chanfana 2.x (OpenAPI on Hono) | Contract-first development, auto-validates requests, existing in repo |
+| Validation | Zod | TypeScript-first schemas, compile-time safety, minimal overhead |
+
+---
+
+## Frontend: SolidJS Decision
+
+### Why SolidJS?
+
+**Strengths**:
+- **Fine-Grained Reactivity**: No virtual DOM overhead. Updates are surgical (only changed elements re-render).
+- **Small Bundle**: ~10KB gzipped core. With Vite tree-shaking, our bundle target is <500KB (currently plenty of headroom).
+- **JSX Syntax**: Identical to React. Lower onboarding friction for React developers.
+- **Existing in Repo**: Reduces decision complexity and setup time.
+- **Built-in Scoped Styles**: CSS modules support via Vite aligns with component co-location requirement.
+
+**Weaknesses** (acceptable):
+- Smaller ecosystem than React (but all needed libraries available: routing, state management via context)
+- Smaller community (but sufficient documentation and examples for MVP)
+
+### Alternatives Considered
+
+**React**:
+- ❌ Larger bundle (~40KB + React DOM) + need for state management (Redux, Zustand, Jotai)
+- ❌ Virtual DOM overhead for frequent updates
+- ✅ Massive ecosystem, but overkill for MVP scope
+
+**Vue 3**:
+- ❌ Options API learning curve different from existing codebase
+- ❌ Template syntax (not JSX) requires different mental model
+- ✅ Excellent documentation and ecosystem
+
+**Plain HTML/JavaScript**:
+- ❌ No reactive data binding; manual DOM manipulation is error-prone
+- ❌ No component system; leads to code duplication
+
+**Decision**: **SolidJS** balances performance, bundle size, and ecosystem needs for MVP.
+
+---
+
+## Backend: Cloudflare Workers Decision
+
+### Why Cloudflare Workers?
+
+**Strengths**:
+- **Zero Cold-Start**: Runs on edge infrastructure globally. Request comes in → function runs immediately (no Lambda cold-start penalty).
+- **Integrated Ecosystem**: D1 (database) + R2 (storage) + KV (cache/sessions) + Analytics Engine in same platform.
+- **TypeScript Native**: Full TypeScript support with strict mode enforcement.
+- **Existing in Repo**: Project already uses Wrangler, Chanfana, Hono.
+- **Cost Effective**: Free tier includes 100k requests/day; pay-as-you-go thereafter (fractions of $).
+- **DX**: Rapid feedback loop with `wrangler dev` for local development.
+
+**Weaknesses** (acceptable):
+- Vendor lock-in to Cloudflare (mitigated by standard Node.js/Express-like framework with Hono)
+- CPU time limits (~50ms for free tier) require efficient code
+- No direct filesystem access (appropriate for stateless API design)
+
+### Alternatives Considered
+
+**AWS Lambda + API Gateway**:
+- ✅ Mature, widely used, large ecosystem
+- ❌ Cold-start latency (100-500ms), more complex setup
+- ❌ Separate services for auth, storage, database (DynamoDB, S3, RDS)
+- ❌ Higher operational overhead and cost for MVP
+
+**Node.js Server (self-hosted)**:
+- ❌ Requires infrastructure management (server costs, scaling, monitoring)
+- ❌ Not suitable for edge deployment
+- ✅ Familiar for many developers
+
+**Google Cloud Run**:
+- ✅ Serverless, auto-scaling
+- ❌ Cold-start latency (2-5s)
+- ❌ Separate services for storage (Cloud Storage), database (Cloud Firestore)
+
+**Decision**: **Cloudflare Workers** minimizes operational burden and latency for MVP. Platform integration reduces setup complexity.
+
+---
+
+## Database: Cloudflare D1 Decision
+
+### Why Cloudflare D1 (SQLite)?
+
+**Strengths**:
+- **Edge Compute**: Colocated with Workers. Query latency ~50-100ms (vs. 200-500ms for central PostgreSQL).
+- **Local Development**: Wrangler CLI creates local SQLite for identical prod/dev experience.
+- **No Ops**: Cloudflare handles backups, scaling, replication. No database server management.
+- **ACID Transactions**: Full transaction support for sighting deletion + R2 cleanup (when implemented).
+- **Integrated with KV**: Shares auth context with Worker request.
+- **SQL Skills**: Developers familiar with PostgreSQL/MySQL can work with D1 SQLite dialect with minor adjustments.
+
+**Weaknesses** (acceptable):
+- SQLite not ideal for massive concurrency (100+ concurrent writers), but MVP targets 100-1000 users
+- Per-region replication requires workarounds (P2 feature)
+- No built-in full-text search (can implement via triggers/FTS5 in D1)
+
+### Alternatives Considered
+
+**PostgreSQL (self-hosted)**:
+- ✅ Mature, powerful, industry standard
+- ❌ Requires database server infrastructure (or managed service like Heroku)
+- ❌ Query latency from edge Workers to central database (200-500ms)
+- ❌ Higher operational overhead
+
+**Supabase (PostgreSQL SaaS)**:
+- ✅ Easy setup, Postgres power, good DX
+- ❌ External service (Workers → HTTPS → Supabase adds latency)
+- ❌ Potential data residency issues (P2)
+
+**Firebase/Firestore**:
+- ✅ Realtime database, simple API
+- ❌ Vendor lock-in to Google Cloud
+- ❌ Pricing can escalate quickly
+- ❌ NoSQL model not ideal for relational data (users ↔ sightings)
+
+**Decision**: **Cloudflare D1** aligns with Workers deployment model and meets MVP scale requirements without operational overhead.
+
+---
+
+## Session Management: KV + HTTP-Only Cookies Decision
+
+### Why KV + Cookies (not JWT)?
+
+**JWT Concerns**:
+- Token stored in localStorage → XSS attack can steal token and make requests as user
+- Revocation is difficult (token valid until expiry)
+- Token refresh complexity (refresh tokens, access tokens, rotation)
+
+**KV + HTTP-Only Cookies Benefits**:
+- HTTP-Only flag prevents JavaScript access (XSS-safe)
+- Secure flag ensures HTTPS-only transmission
+- SameSite=Strict prevents CSRF attacks
+- Server-side session invalidation on sign-out (immediate effect)
+- Simple session lifecycle (create on sign-in, delete on sign-out)
+
+### Session Storage Details
+
+**Session Format** (in KV):
+```json
+{
+  "user_id": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+  "created_at": 1707000000,
+  "expires_at": 1707604800
+}
+```
+
+**KV Expiration**: 7 days (604800 seconds)
+- KV automatically deletes expired sessions
+- Session refresh on each sign-in extends expiry
+
+**Cookie Headers**:
+```
+Set-Cookie: session={sessionId}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+```
+
+**Security Properties**:
+- `HttpOnly`: JavaScript cannot read cookie (prevents XSS token theft)
+- `Secure`: Only sent over HTTPS (prevents MITM)
+- `SameSite=Strict`: Not sent in cross-site requests (prevents CSRF)
+- `Max-Age=604800`: Browser deletes after 7 days (matches KV TTL)
+
+### Alternatives Considered
+
+**JWT in localStorage**:
+- ❌ XSS vulnerability (attacker steals token)
+- ❌ No server-side revocation
+
+**JWT in HTTP-Only Cookie** (hybrid):
+- ✅ More secure than localStorage
+- ❌ Refresh token complexity
+- ❌ Revocation still difficult
+
+**Decision**: **KV + HTTP-Only Cookies** provides optimal security (XSS-resistant, CSRF-resistant, revocable) with simplicity.
+
+---
+
+## Password Hashing: bcryptjs Decision
+
+### Why bcryptjs (cost 12)?
+
+**Bcrypt Strengths**:
+- **Adaptive Hashing**: Cost parameter (12) means hashing takes ~250ms. Slows brute-force attacks.
+- **Salting**: Automatic per-hash salt prevents rainbow tables.
+- **Industry Standard**: Used by major platforms (GitHub, Stripe, etc.)
+- **JavaScript Implementation**: No native dependency (pure JS).
+
+**Cost 12 Justification**:
+- Cost 10 = ~100ms per hash (too fast for modern GPUs)
+- Cost 12 = ~250ms per hash (good balance: acceptable UX, slows attacks)
+- Cost 14+ = >1s per hash (degrades sign-up/sign-in UX)
+
+### Hashing Process
+
+1. User signs up: `bcrypt.hash(password, 12)` → takes 250ms → 60-char hash stored in D1
+2. User signs in: `bcrypt.compare(password, storedHash)` → takes 250ms → constant-time comparison (prevents timing attacks)
+3. Hash never transmitted; only compared server-side
+
+### Alternatives Considered
+
+**PBKDF2**:
+- ✅ Standard algorithm
+- ❌ Less resistant to GPU brute-force (needs higher iterations)
+- ❌ More complex to configure
+
+**Argon2**:
+- ✅ Modern, winner of Password Hashing Competition
+- ❌ Requires native C binding (additional build complexity)
+- ❌ Slower in JavaScript (not available in pure JS)
+
+**scrypt**:
+- ✅ Good security properties
+- ❌ Slower than bcrypt (not necessary for MVP)
+
+**Decision**: **bcryptjs (cost 12)** balances security and UX for MVP.
+
+---
+
+## API Validation: Zod Decision
+
+### Why Zod?
+
+**Strengths**:
+- **TypeScript-First**: Schemas generate TypeScript types automatically (single source of truth).
+- **Composable**: Define reusable schema pieces (common patterns like email, password strength).
+- **Detailed Errors**: Validation errors include field path, code, and message.
+- **Runtime Safety**: Validates at API boundary (frontend can't trick backend validation).
+- **Lightweight**: ~14KB gzipped; minimal overhead.
+
+**Integration with Chanfana**:
+```typescript
+// In endpoint handler
+const SignUpRequest = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/),
+  confirmPassword: z.string()
+});
+
+// Chanfana auto-validates request against schema
+// Returns 400 with detailed errors if validation fails
+```
+
+### Alternatives Considered
+
+**joi**:
+- ✅ Powerful, detailed errors
+- ❌ Larger bundle (~20KB)
+- ❌ Not as TypeScript-friendly
+
+**Simple regex validation**:
+- ❌ No type safety
+- ❌ Error messages less helpful
+- ❌ Harder to maintain complex validation rules
+
+**Decision**: **Zod** provides type safety and excellent developer experience with minimal bundle cost.
+
+---
+
+## Photo Storage: Cloudflare R2 Decision
+
+### Why R2 (not direct database)?
+
+**Why Not Store Photos in Database**:
+- Large BLOBs (5MB photos) bloat database size
+- Slows query performance (bandwidth to retrieve photos)
+- Difficult to scale (database becomes IO bottleneck)
+
+**Why R2**:
+- **Object Storage**: Designed for files; unlimited scale
+- **Integrated with Workers**: Signed URLs generated in same request context
+- **Cost**: $0.015/GB storage (vs. $0.0256/GB for backups)
+- **Signed URLs**: URLs expire after 10 minutes (security)
+- **Cleanup on Delete**: Can schedule async cleanup of orphaned objects (P2)
+
+### Photo Upload Flow
+
+1. Browser compresses and validates photo locally (JPEG/PNG/WebP, <5MB)
+2. POST `/api/upload/photo` multipart → backend validates again → upload to R2 with unique key
+3. R2 returns: object_id
+4. Generate signed URL: `https://pub-{bucket}.r2.dev/sighting-photos/{sighting_id}/photo.jpg?X-Amz-Signature=...&X-Amz-Expires=600`
+5. Signed URL included in sighting creation payload → stored in D1
+6. Frontend displays photo using signed URL (valid for 10 minutes)
+
+### Alternatives Considered
+
+**AWS S3**:
+- ✅ Industry standard, massive ecosystem
+- ❌ Different authentication model
+- ❌ Higher operational overhead (AWS account setup)
+
+**Firebase Cloud Storage**:
+- ✅ Easy integration with Firebase Auth
+- ❌ Limited to Firebase ecosystem
+- ❌ Pricing less transparent
+
+**Base64 in Database**:
+- ❌ Bloats database, terrible performance
+- ❌ No CDN caching of images
+
+**Decision**: **Cloudflare R2** integrates with Workers platform and keeps database lean.
+
+---
+
+## API Documentation: OpenAPI 3.1 via Chanfana
+
+### Why OpenAPI?
+
+**Benefits**:
+- **Contract-First Development**: Define endpoints before coding implementation
+- **Auto-Documentation**: Swagger UI generated automatically from schema
+- **Validation**: Chanfana decorators validate all incoming requests against schema
+- **Client Generation**: OpenAPI schema can generate client SDKs (P2)
+- **Versioning**: Schema versions match API versions (breaking changes → MAJOR version bump)
+
+### Versioning Strategy
+
+**Current Version**: 1.0.0
+- New endpoints or non-breaking field additions → MINOR version (1.1.0)
+- Breaking changes (removed fields, type changes) → MAJOR version (2.0.0)
+- Bug fixes or clarifications → PATCH version (1.0.1)
+
+**Example Changes**:
+- Add `tags` field to sightings: 1.0.0 → 1.1.0 ✅ (additive, backward-compatible)
+- Rename `location` to `place`: 1.0.0 → 2.0.0 (breaking, requires client updates)
+- Fix typo in error message: 1.0.0 → 1.0.1 (no schema change)
+
+---
+
+## Development Workflow
+
+### Local Development
+
+1. **Clone + Install**:
+   ```bash
+   git clone ...
+   pnpm install
+   ```
+
+2. **Start Services**:
+   ```bash
+   # Terminal 1
+   cd cloudflare-worker && pnpm dev
+
+   # Terminal 2
+   cd solidjs && pnpm dev
+   ```
+
+3. **Access Applications**:
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:8787
+   - Swagger: http://localhost:8787/
+
+4. **Development Loop**:
+   - Modify backend code → Wrangler auto-reloads
+   - Modify frontend code → Vite HMR auto-reloads browser
+   - View errors in console immediately
+
+### Deployment Strategy
+
+**Backend**:
+```bash
+cd cloudflare-worker
+wrangler deploy --env production
+```
+
+**Frontend**:
+```bash
+cd solidjs
+pnpm build                          # Generates dist/
+wrangler pages deploy dist/         # Deploy to Cloudflare Pages
+```
+
+---
+
+## Performance Targets & Monitoring
+
+### Performance Targets (from spec)
+
+| Metric | Target | Implementation Strategy |
+|--------|--------|--------------------------|
+| Sign-in | 95% < 500ms | KV session lookup (~10ms) + bcryptjs verify (~250ms) + D1 query (~50ms) = ~310ms |
+| Dashboard load | <1s | D1 index on (user_id, deleted_at) + sort by created_at DESC |
+| Form validation | <100ms | Zod schema validation runs synchronously in Worker (sub-10ms) |
+| Photo upload | <2s on 3G | R2 upload is async; UI shows progress spinner |
+| FCP | ≤1.5s on 3G | Vite code-splitting, lazy-load sighting routes, minification |
+| Accessibility | ≥90 | ARIA labels, semantic HTML, keyboard navigation |
+| Bundle size | ≤500KB | Vite tree-shaking, SolidJS (~10KB) + component code (~200KB) + libraries (~50KB) |
+
+### Monitoring Strategy
+
+**Workers Analytics Engine**:
+- Request latency histogram (p50, p95, p99)
+- Error rates by endpoint
+- CPU time distribution
+
+**D1 Metrics** (manual):
+- Slow query logs (>50ms queries)
+- Index usage
+
+**Frontend Monitoring** (P2):
+- Web Vitals (CLS, LCP, FID) via analytics library
+- Error tracking via Sentry or similar
+
+---
+
+## Future Enhancements (P2+)
+
+- **Password Reset**: Implement forgot password flow with email verification
+- **OAuth2**: Add social sign-in (GitHub, Google)
+- **Full-Text Search**: SQLite FTS5 for searching sightings
+- **Pagination**: Cursor-based pagination for large sighting lists
+- **Image Optimization**: Resize photos to multiple sizes (thumbnail, medium, full)
+- **Geolocation**: Automatic geocoding of manual location strings
+- **User Profiles**: Public profile pages showing user's sightings
+- **Sighting Comments**: Community engagement feature
+- **Mobile App**: Native iOS/Android apps using same APIs
+- **Real-Time Notifications**: WebSocket updates when new sightings in user's area
+- **Rate Limiting**: Prevent abuse of auth endpoints
+
+---
+
+## Conclusion
+
+The selected tech stack prioritizes:
+1. **Developer Experience**: Minimal setup, rapid feedback, existing tools
+2. **Performance**: Edge compute (Workers), edge database (D1), no cold-start
+3. **Security**: HTTP-only cookies, bcryptjs hashing, CORS/SameSite protection
+4. **Simplicity**: Integrated platform (no juggling 5 vendors), small dependencies
+5. **Scalability**: Designed to grow from 100 to 10k users with minimal changes
+
+All decisions are documented and justified. Alternatives were considered and rationale recorded. The stack is production-ready for MVP launch.
+
+---
+
+**Research Status**: ✅ Complete | **Date**: 2026-02-04

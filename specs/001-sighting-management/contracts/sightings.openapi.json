@@ -1,0 +1,719 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Animal Sightings - Sightings Management API",
+    "description": "CRUD endpoints for managing wildlife sightings",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Animal Identifier Team",
+      "url": "https://github.com/your-org/animal-identifier"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8787",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://api.wildlife-tracker.workers.dev",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Sightings",
+      "description": "Wildlife sighting CRUD operations"
+    },
+    {
+      "name": "Photo Upload",
+      "description": "Photo upload and management"
+    }
+  ],
+  "paths": {
+    "/api/sightings": {
+      "post": {
+        "tags": ["Sightings"],
+        "summary": "Create a new sighting",
+        "description": "Record a new wildlife sighting with animal name, location, and optional photo. Timestamp is auto-populated server-side. Requires authentication.",
+        "operationId": "createSighting",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["animal_name", "location"],
+                "properties": {
+                  "animal_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Name of the animal spotted",
+                    "example": "Red Fox"
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "Location where animal was spotted",
+                    "example": "Central Park, NYC"
+                  },
+                  "photo_url": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uri",
+                    "description": "Signed R2 URL from /api/upload/photo endpoint (optional)",
+                    "example": "https://pub-abc123.r2.dev/sightings/xyz/photo.jpg?X-Amz-Signature=..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sighting created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sighting"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (missing required fields, invalid data)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "examples": {
+                  "missingAnimalName": {
+                    "value": {
+                      "error": "Animal name is required",
+                      "field": "animal_name"
+                    }
+                  },
+                  "nameTooLong": {
+                    "value": {
+                      "error": "Animal name too long (max 200 chars)",
+                      "field": "animal_name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Sightings"],
+        "summary": "List user's sightings",
+        "description": "Retrieve all sightings for the authenticated user, sorted by date (newest first). Returns an array of sighting objects.",
+        "operationId": "listSightings",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Maximum number of sightings to return (pagination)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            },
+            "description": "Offset for pagination (skip first N results)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user's sightings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "total"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Sighting"
+                      },
+                      "description": "Array of sightings"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of sightings (not including offset/limit)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sightings/{id}": {
+      "get": {
+        "tags": ["Sightings"],
+        "summary": "Get sighting details",
+        "description": "Retrieve detailed information for a specific sighting. User can only access their own sightings.",
+        "operationId": "getSighting",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sighting ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sighting details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sighting"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (sighting belongs to another user)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Not authorized to access this sighting"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sighting not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Sightings"],
+        "summary": "Update sighting",
+        "description": "Update animal name, location, or photo for an existing sighting. Only the authenticated owner can update. Timestamp cannot be edited.",
+        "operationId": "updateSighting",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sighting ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "animal_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Updated animal name (optional)"
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "Updated location (optional)"
+                  },
+                  "photo_url": {
+                    "type": "string",
+                    "nullable": true,
+                    "format": "uri",
+                    "description": "New signed R2 URL to replace photo (optional). Set to null to remove photo."
+                  },
+                  "updated_at": {
+                    "type": "integer",
+                    "description": "Optimistic lock: client sends known updated_at timestamp. Returns 409 if server timestamp differs (stale update)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sighting updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sighting"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (sighting belongs to another user)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sighting not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (stale update - updated_at doesn't match server version)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Sighting was modified. Reload and try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Sightings"],
+        "summary": "Delete sighting",
+        "description": "Delete (soft delete) a sighting. The sighting is marked as deleted but not physically removed from database (audit trail). Only the owner can delete.",
+        "operationId": "deleteSighting",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sighting ID"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sighting deleted successfully (no response body)"
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (sighting belongs to another user)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sighting not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/photo": {
+      "post": {
+        "tags": ["Photo Upload"],
+        "summary": "Upload sighting photo",
+        "description": "Upload a photo to R2 storage. Returns signed URL for use in sighting creation/update. Supports JPEG, PNG, WebP. Max 5MB.",
+        "operationId": "uploadPhoto",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["photo"],
+                "properties": {
+                  "photo": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image file (JPEG, PNG, or WebP)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Photo uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["photo_url", "photo_format", "photo_size_bytes"],
+                  "properties": {
+                    "photo_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Signed R2 URL (valid for 10 minutes)",
+                      "example": "https://pub-abc123.r2.dev/sighting-photos/xyz789/photo.jpg?X-Amz-Signature=..."
+                    },
+                    "photo_format": {
+                      "type": "string",
+                      "description": "MIME type of uploaded image",
+                      "enum": ["image/jpeg", "image/png", "image/webp"],
+                      "example": "image/jpeg"
+                    },
+                    "photo_size_bytes": {
+                      "type": "integer",
+                      "description": "File size in bytes",
+                      "example": 524288
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file (wrong format or too large)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "examples": {
+                  "invalidFormat": {
+                    "value": {
+                      "error": "Only JPEG, PNG, WebP formats allowed",
+                      "field": "photo"
+                    }
+                  },
+                  "fileTooLarge": {
+                    "value": {
+                      "error": "File size must be under 5MB",
+                      "field": "photo"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upload to R2 failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Failed to upload file to storage. Please try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Sighting": {
+        "type": "object",
+        "required": ["id", "user_id", "animal_name", "location", "timestamp_sighted", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Sighting ID (UUID)",
+            "example": "sight001abc123"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Owner's user ID",
+            "example": "user001abc123"
+          },
+          "animal_name": {
+            "type": "string",
+            "description": "Name of animal spotted",
+            "example": "Red Fox"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location where spotted",
+            "example": "Central Park, NYC"
+          },
+          "timestamp_sighted": {
+            "type": "integer",
+            "description": "When animal was spotted (Unix seconds, server-determined, immutable)",
+            "example": 1707000000
+          },
+          "photo_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signed R2 URL for photo (optional, expires in 10 minutes)",
+            "example": "https://pub-abc123.r2.dev/sighting-photos/sight001/photo.jpg?X-Amz-Signature=..."
+          },
+          "photo_format": {
+            "type": "string",
+            "nullable": true,
+            "description": "MIME type of photo",
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "example": "image/jpeg"
+          },
+          "photo_size_bytes": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Photo file size in bytes",
+            "example": 524288
+          },
+          "photo_uploaded_at": {
+            "type": "integer",
+            "nullable": true,
+            "description": "When photo was uploaded (Unix seconds)",
+            "example": 1707000000
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Record creation timestamp (Unix seconds)",
+            "example": 1707000000
+          },
+          "updated_at": {
+            "type": "integer",
+            "description": "Last update timestamp (Unix seconds, used for optimistic locking)",
+            "example": 1707000000
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "required": ["error", "field"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field name that failed validation"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "HTTP-only session cookie set after sign-in. Automatically included in requests by browser."
+      }
+    }
+  }
+}

@@ -1,0 +1,390 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Animal Sightings - Authentication API",
+    "description": "User authentication endpoints for the sighting management system",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Animal Identifier Team",
+      "url": "https://github.com/your-org/animal-identifier"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8787",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://api.wildlife-tracker.workers.dev",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User account management and session handling"
+    }
+  ],
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Create a new user account",
+        "description": "Register a new user with email and password. Password must meet strength requirements (8+ chars, 1 uppercase, 1 number, 1 special char). Returns user object and sets HTTP-only session cookie.",
+        "operationId": "signupUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "confirmPassword"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User email address (must be unique, case-insensitive)",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "description": "Password (8+ chars, 1 uppercase, 1 number, 1 special char)",
+                    "example": "SecurePass123!"
+                  },
+                  "confirmPassword": {
+                    "type": "string",
+                    "minLength": 8,
+                    "description": "Password confirmation (must match password field)",
+                    "example": "SecurePass123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User account created successfully. Session cookie set (HttpOnly, Secure, SameSite=Strict, 7-day TTL)",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "session=abc123def456; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input (validation error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "examples": {
+                  "weakPassword": {
+                    "value": {
+                      "error": "Password must be 8+ chars with uppercase, number, special char",
+                      "field": "password"
+                    }
+                  },
+                  "passwordMismatch": {
+                    "value": {
+                      "error": "Passwords do not match",
+                      "field": "confirmPassword"
+                    }
+                  },
+                  "invalidEmail": {
+                    "value": {
+                      "error": "Invalid email address",
+                      "field": "email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Email already registered"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signin": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sign in with email and password",
+        "description": "Authenticate user with email/password credentials. Returns user object and sets HTTP-only session cookie. Successful sign-in updates last_login_at timestamp.",
+        "operationId": "signinUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "SecurePass123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sign-in successful. Session cookie set.",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "session=abc123def456; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Invalid email or password"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/signout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sign out and invalidate session",
+        "description": "Clear session cookie and remove session from server. After sign-out, user must sign-in again to access protected resources.",
+        "operationId": "signoutUser",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sign-out successful. Session cookie cleared.",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Not authenticated"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during sign-out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user details",
+        "description": "Returns the currently authenticated user's profile information. Requires valid session cookie.",
+        "operationId": "getCurrentUser",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Not authenticated"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": ["id", "email", "created_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID (UUID format)",
+            "example": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Account creation timestamp (Unix seconds)",
+            "example": 1707000000
+          },
+          "last_login_at": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Last successful sign-in timestamp (Unix seconds)",
+            "example": 1707000000
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "required": ["error", "field"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field name that failed validation",
+            "example": "email"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "HTTP-only session cookie set after sign-in. Automatically included in requests by browser."
+      }
+    }
+  }
+}
