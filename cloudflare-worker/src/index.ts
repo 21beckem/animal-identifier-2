@@ -3,6 +3,10 @@ import { Hono } from "hono";
 import { runMigrations } from "./db/migrate";
 import { seedDatabase, clearDatabase } from "./db/seed";
 import type { Env } from "./types";
+import { signupRoute } from "./endpoints/auth/signup";
+import { signinRoute } from "./endpoints/auth/signin";
+import { signoutRoute } from "./endpoints/auth/signout";
+import { meRoute } from "./endpoints/auth/me";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -12,16 +16,18 @@ const openapi = fromHono(app, {
 	docs_url: "/",
 });
 
-// TODO: Register auth and sighting endpoints (Phase 3+)
-// Old task endpoints removed - will be replaced with:
-// - POST /api/auth/signup
-// - POST /api/auth/signin
-// - POST /api/auth/signout
-// - GET /api/sightings
-// - POST /api/sightings
-// - GET /api/sightings/:id
-// - PATCH /api/sightings/:id
-// - DELETE /api/sightings/:id
+// Register auth endpoints
+app.route('/', signupRoute);
+app.route('/', signinRoute);
+app.route('/', signoutRoute);
+app.route('/', meRoute);
+
+// TODO: Register sighting endpoints (Phase 4+)
+// - POST /api/sightings (create)
+// - GET /api/sightings (list)
+// - GET /api/sightings/:id (get)
+// - PATCH /api/sightings/:id (update)
+// - DELETE /api/sightings/:id (delete)
 
 // Health check endpoint
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));

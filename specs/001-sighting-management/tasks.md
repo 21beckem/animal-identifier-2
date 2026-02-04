@@ -98,39 +98,39 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Type & Schema Definitions
 
-- [ ] T019 [P] Create `cloudflare-worker/src/types.ts` with TypeScript interfaces: User, Sighting, SignupRequest, SigninRequest, CreateSightingRequest, UpdateSightingRequest, ErrorResponse
-- [ ] T020 [P] Create Zod schemas in `cloudflare-worker/src/validation/schemas.ts` for: email format, password strength (8+ chars, 1 uppercase), animal_name (1-200 chars), location (1-500 chars), photo_url base64 format validation
-- [ ] T021 [P] Create `cloudflare-worker/src/validation/validators.ts` with reusable validation functions: validateEmail(), validatePassword(), validatePhotoUrl()
-- [ ] T022 [P] Create `solidjs/src/types.js` (JSDoc) with type definitions for API requests/responses (User, Sighting, form data)
+- [X] T019 [P] Create `cloudflare-worker/src/types.ts` with TypeScript interfaces: User, Sighting, SignupRequest, SigninRequest, CreateSightingRequest, UpdateSightingRequest, ErrorResponse
+- [X] T020 [P] Create Zod schemas in `cloudflare-worker/src/validation/schemas.ts` for: email format, password strength (8+ chars, 1 uppercase), animal_name (1-200 chars), location (1-500 chars), photo_url base64 format validation
+- [X] T021 [P] Create `cloudflare-worker/src/validation/validators.ts` with reusable validation functions: validateEmail(), validatePassword(), validatePhotoUrl()
+- [X] T022 [P] Create `solidjs/src/types.js` (JSDoc) with type definitions for API requests/responses (User, Sighting, form data)
 
 ### Auth Middleware & KV Integration
 
-- [ ] T023 [P] Create `cloudflare-worker/src/middleware/auth.ts` with middleware function: getSessionFromCookie(), validateSession(), extractUserIdFromSession()
-- [ ] T024 [P] Implement session creation in KV: function setSession(userId, sessionId, ttl) → stores in KV with 7-day expiration
-- [ ] T025 [P] Implement session retrieval in KV: function getSession(sessionId) → retrieves from KV, returns user_id or null if expired
-- [ ] T026 [P] Implement session deletion in KV: function deleteSession(sessionId) → removes from KV on logout
+- [X] T023 [P] Create `cloudflare-worker/src/middleware/auth.ts` with middleware function: getSessionFromCookie(), validateSession(), extractUserIdFromSession()
+- [X] T024 [P] Implement session creation in KV: function setSession(userId, sessionId, ttl) → stores in KV with 7-day expiration
+- [X] T025 [P] Implement session retrieval in KV: function getSession(sessionId) → retrieves from KV, returns user_id or null if expired
+- [X] T026 [P] Implement session deletion in KV: function deleteSession(sessionId) → removes from KV on logout
 - [ ] T027 [P] Test auth middleware: verify valid sessions pass, expired sessions reject, missing cookie rejects
 
 ### API Client & Services
 
-- [ ] T028 [P] Create `solidjs/src/services/api.js` with fetch-based API client: request(method, endpoint, body), handle errors, return JSON response
-- [ ] T029 [P] Create `solidjs/src/services/auth.js` with functions: signup(email, password), signin(email, password), signout(), getCurrentUser(), checkSession()
-- [ ] T030 [P] Create `solidjs/src/services/sightings.js` with functions: createSighting(name, location, photoUrl), updateSighting(id, changes), getSighting(id), listSightings(), deleteSighting(id)
-- [ ] T031 [P] Create `solidjs/src/services/storage.js` with localStorage helpers: saveSession(token), loadSession(), clearSession(), saveFormDraft(data), loadFormDraft()
+- [X] T028 [P] Create `solidjs/src/services/api.js` with fetch-based API client: request(method, endpoint, body), handle errors, return JSON response
+- [X] T029 [P] Create `solidjs/src/services/auth.js` with functions: signup(email, password), signin(email, password), signout(), getCurrentUser(), checkSession()
+- [X] T030 [P] Create `solidjs/src/services/sightings.js` with functions: createSighting(name, location, photoUrl), updateSighting(id, changes), getSighting(id), listSightings(), deleteSighting(id)
+- [X] T031 [P] Create `solidjs/src/services/storage.js` with localStorage helpers: saveSession(token), loadSession(), clearSession(), saveFormDraft(data), loadFormDraft()
 
 ### Global Styles & Design System
 
-- [ ] T032 [P] Create `solidjs/src/styles.css` with global styles: reset/normalize, color variables (primary, error, success), spacing grid (4px base, 8px/16px/24px), typography scales, form element defaults
-- [ ] T033 [P] Create `solidjs/src/components/ErrorBoundary/comp.jsx` to wrap app and handle uncaught errors gracefully
-- [ ] T034 [P] Create `solidjs/src/components/LoadingSpinner/comp.jsx` and `style.css` with animated spinner component (used for async operations)
-- [ ] T035 [P] Create `solidjs/src/pages/Home.jsx` with public homepage: hero section, features list, sign-up CTA button
+- [X] T032 [P] Create `solidjs/src/styles.css` with global styles: reset/normalize, color variables (primary, error, success), spacing grid (4px base, 8px/16px/24px), typography scales, form element defaults
+- [X] T033 [P] Create `solidjs/src/components/ErrorBoundary/comp.jsx` to wrap app and handle uncaught errors gracefully
+- [X] T034 [P] Create `solidjs/src/components/LoadingSpinner/comp.jsx` and `style.css` with animated spinner component (used for async operations)
+- [X] T035 [P] Create `solidjs/src/pages/Home.jsx` with public homepage: hero section, features list, sign-up CTA button
 
 ### Routing & App Wrapper
 
-- [ ] T036 [P] Create `solidjs/src/index.jsx` with main app entry point: define routes (/, /signup, /signin, /dashboard, /create-sighting), set up Router, wrap in ErrorBoundary
-- [ ] T037 [P] Create routing utility in `solidjs/src/utils/routing.js`: functions redirectToSignin(), redirectToDashboard(), getAuthStatus()
-- [ ] T038 [P] Implement protected route wrapper (redirect unauthenticated users to signin): `<ProtectedRoute>`
-- [ ] T039 [P] Commit foundational infrastructure to feature branch with message "feat: setup database, auth middleware, API clients, routing"
+- [X] T036 [P] Create `solidjs/src/index.jsx` with main app entry point: define routes (/, /signup, /signin, /dashboard, /create-sighting), set up Router, wrap in ErrorBoundary
+- [X] T037 [P] Create routing utility in `solidjs/src/utils/routing.js`: functions redirectToSignin(), redirectToDashboard(), getAuthStatus()
+- [X] T038 [P] Implement protected route wrapper (redirect unauthenticated users to signin): `<ProtectedRoute>`
+- [X] T039 [P] Commit foundational infrastructure to feature branch with message "feat: setup database, auth middleware, API clients, routing"
 
 ---
 
