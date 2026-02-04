@@ -1,16 +1,31 @@
-/**
- * Auth Page (Sign Up / Sign In)
- *
- * Conditionally displays SignUp or SignIn form based on route.
- * Will be populated in Phase 3.
- */
+import { useSearchParams } from '@solidjs/router';
+import SignUp from '../components/SignUp/comp';
+import SignIn from '../components/SignIn/comp';
 
+/**
+ * Auth Page
+ * 
+ * Wrapper page for SignUp and SignIn components.
+ * Uses query param ?mode=signin or ?mode=signup to determine which form to show.
+ * Defaults to signup if no mode specified.
+ * 
+ * Routes:
+ * - /auth?mode=signup -> SignUp form
+ * - /auth?mode=signin -> SignIn form
+ * 
+ * @returns {import('solid-js').JSX.Element}
+ */
 export default function Auth() {
-	return (
-		<div class="auth-page">
-			<div class="container">
-				<p>Auth page - will be implemented in Phase 3</p>
-			</div>
-		</div>
-	);
+  const [searchParams] = useSearchParams();
+  
+  // Determine which form to show based on query param
+  const isSignIn = () => searchParams.mode === 'signin';
+  
+  // TODO: Add redirect if already authenticated (after auth store is implemented)
+  
+  return (
+    <div class="auth-page">
+      {isSignIn() ? <SignIn /> : <SignUp />}
+    </div>
+  );
 }

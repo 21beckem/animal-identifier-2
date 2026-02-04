@@ -3,9 +3,11 @@
  *
  * Handles user signup, signin, signout, and session management.
  * Uses API client to communicate with backend auth endpoints.
+ * Integrates with auth store for state management.
  */
 
 import * as api from './api';
+import authStore from '../stores/auth';
 
 /**
  * Sign up a new user
@@ -20,6 +22,13 @@ export async function signup(email, password) {
 		email,
 		password,
 	});
+
+	// After successful signup, update auth store
+	if (response && response.user) {
+		authStore.setUser(response.user);
+	} else if (response) {
+		authStore.setUser(response);
+	}
 
 	return response;
 }
@@ -38,6 +47,13 @@ export async function signin(email, password) {
 		password,
 	});
 
+	// After successful signin, update auth store
+	if (response && response.user) {
+		authStore.setUser(response.user);
+	} else if (response) {
+		authStore.setUser(response);
+	}
+
 	return response;
 }
 
@@ -49,6 +65,8 @@ export async function signin(email, password) {
  */
 export async function signout() {
 	await api.post('/api/auth/signout', {});
+	// Clear auth store after signout
+	authStore.clearUser();
 }
 
 /**

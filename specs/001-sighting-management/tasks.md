@@ -204,7 +204,7 @@ Phase 7 (Polish & Cross-Cutting)
   - Add proper mount() call to render app to DOM
   - Verify app renders without "router primitives" error
 
-- [ ] T046 [US1] [P] Create `solidjs/src/components/SignIn/comp.jsx` with signin form
+- [X] T046 [US1] [P] Create `solidjs/src/components/SignIn/comp.jsx` with signin form
   - Input fields: email, password
   - Remember me checkbox (optional, stores email in localStorage)
   - Submit button with loading state
@@ -212,25 +212,25 @@ Phase 7 (Polish & Cross-Cutting)
   - Link to sign-up page
   - File: `solidjs/src/components/SignIn/style.css`
 
-- [ ] T047 [US1] [P] Create `solidjs/src/pages/Auth.jsx` page wrapper for SignUp/SignIn
+- [X] T047 [US1] [P] Create `solidjs/src/pages/Auth.jsx` page wrapper for SignUp/SignIn
   - Route parameter or query param to determine which form (signup vs signin)
   - Redirect to dashboard if already authenticated
   - File wraps SignUp and SignIn components
 
 ### Frontend: Auth State Management & Session Persistence
 
-- [ ] T048 [US1] [P] Create auth context/store in `solidjs/src/stores/auth.js` with:
+- [X] T048 [US1] [P] Create auth context/store in `solidjs/src/stores/auth.js` with:
   - Global state: currentUser, isAuthenticated, isLoading
   - Actions: setUser(), clearUser(), checkSession(), setLoading()
   - Initialization: call checkSession() on app mount to restore from server
 
-- [ ] T049 [US1] [P] Create `solidjs/src/utils/sessionCheck.js` function that calls GET /api/auth/me on app mount to verify active session
+- [X] T049 [US1] [P] Create `solidjs/src/utils/sessionCheck.js` function that calls GET /api/auth/me on app mount to verify active session
   - If user is authenticated, populate auth store
   - If 401 returned, user is not authenticated (redirect to home/signin as needed)
 
 ### Frontend: Navigation with Auth Awareness
 
-- [ ] T050 [US1] [P] Create `solidjs/src/components/Navbar/comp.jsx` with navigation bar
+- [X] T050 [US1] [P] Create `solidjs/src/components/Navbar/comp.jsx` with navigation bar
   - Display authenticated user's email (from auth store) if logged in
   - Show "Sign Out" button if authenticated
   - Show "Sign In" link if not authenticated
