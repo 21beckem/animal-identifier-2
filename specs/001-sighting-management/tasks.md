@@ -281,7 +281,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Frontend: Sighting Form Component
 
-- [ ] T059 [US2] [P] Create `solidjs/src/components/SightingForm/comp.jsx` with form
+- [X] T059 [US2] [P] Create `solidjs/src/components/SightingForm/comp.jsx` with form
   - Input fields: animal_name (text), location (text)
   - Auto-populated timestamp display (read-only, shows current server time format)
   - Photo upload field (file input, optional)
@@ -293,14 +293,14 @@ Phase 7 (Polish & Cross-Cutting)
   - Success message after submission with option to "Add Another" or "View Dashboard"
   - File: `solidjs/src/components/SightingForm/style.css` with form + image preview styling
 
-- [ ] T060 [US2] [P] Create photo conversion utility in `solidjs/src/utils/photoConverter.js`:
+- [X] T060 [US2] [P] Create photo conversion utility in `solidjs/src/utils/photoConverter.js`:
   - Function: fileToBase64(file) → Promise<string> (uses FileReader API)
   - Function: validatePhotoFile(file) → {valid: boolean, error?: string} (checks MIME type, size <2MB)
   - Function: getImagePreviewUrl(base64String) → data URL for <img> preview
 
 ### Frontend: Sighting Creation Flow Integration
 
-- [ ] T061 [US2] [P] Create `solidjs/src/pages/CreateSighting.jsx` page
+- [X] T061 [US2] [P] Create `solidjs/src/pages/CreateSighting.jsx` page
   - Only accessible if authenticated (protected route)
   - Displays SightingForm component
   - On submit, calls sightings.createSighting() API service
@@ -371,7 +371,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Frontend: Dashboard & Sighting List
 
-- [ ] T075 [US3] [P] Create `solidjs/src/pages/UserDashboard.jsx` page
+- [X] T075 [US3] [P] Create `solidjs/src/pages/UserDashboard.jsx` page
   - Only accessible if authenticated (protected route)
   - Fetches sightings list on mount via sightings.listSightings()
   - Displays sightings in list or grid
@@ -379,12 +379,12 @@ Phase 7 (Polish & Cross-Cutting)
   - Shows empty state if no sightings: "No sightings yet. Create your first sighting!"
   - Passes sightings to SightingCard component for each item
 
-- [ ] T076 [US3] [P] Create `solidjs/src/components/Dashboard/comp.jsx` wrapper component (optional) or incorporate logic in UserDashboard.jsx
+- [X] T076 [US3] [P] Create `solidjs/src/components/Dashboard/comp.jsx` wrapper component (optional) or incorporate logic in UserDashboard.jsx
   - Manages dashboard state: sightings list, loading, error
   - Handles sighting deletion with confirmation dialog
   - File: `solidjs/src/components/Dashboard/style.css`
 
-- [ ] T077 [US3] [P] Create `solidjs/src/components/SightingCard/comp.jsx` sighting list item component
+- [X] T077 [US3] [P] Create `solidjs/src/components/SightingCard/comp.jsx` sighting list item component
   - Display fields: animal_name, location, timestamp_sighted (formatted), photo thumbnail
   - Photo display: if photo_url is base64 data URL, show as <img> (browsers support data: URLs natively)
   - Edit button → opens edit modal or navigates to edit page
@@ -393,7 +393,7 @@ Phase 7 (Polish & Cross-Cutting)
 
 ### Frontend: Sighting Edit View
 
-- [ ] T078 [US3] [P] Create `solidjs/src/pages/EditSighting.jsx` page
+- [X] T078 [US3] [P] Create `solidjs/src/pages/EditSighting.jsx` page
   - Route param: sighting ID
   - Fetch sighting details on mount via sightings.getSighting(id)
   - Populate form fields with current values
@@ -401,7 +401,7 @@ Phase 7 (Polish & Cross-Cutting)
   - Calls sightings.updateSighting() on submit
   - On success, redirect to dashboard
 
-- [ ] T079 [US3] [P] Create photo replacement utility in SightingForm:
+- [X] T079 [US3] [P] Create photo replacement utility in SightingForm:
   - When editing, show current photo (if exists)
   - Option to replace photo (file input)
   - Option to remove photo (set photo_url to null)
