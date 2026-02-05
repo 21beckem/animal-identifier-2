@@ -23,7 +23,7 @@ export async function createSighting(animal_name, location, photo_url = null) {
 		photo_url: photo_url || undefined, // Omit if null/undefined
 	});
 
-	return response;
+	return response.sighting;
 }
 
 /**
@@ -48,7 +48,7 @@ export async function updateSighting(id, changes) {
 	}
 
 	const response = await api.patch(`/api/sightings/${id}`, body);
-	return response;
+	return response.sighting;
 }
 
 /**
@@ -60,7 +60,7 @@ export async function updateSighting(id, changes) {
  */
 export async function getSighting(id) {
 	const response = await api.get(`/api/sightings/${id}`);
-	return response;
+	return response.sighting;
 }
 
 /**
@@ -90,7 +90,7 @@ export async function listSightings(options = {}) {
 	}
 
 	const response = await api.get(endpoint);
-	return response;
+	return response.sightings || [];
 }
 
 /**
