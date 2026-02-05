@@ -4,16 +4,11 @@
  */
 
 import { createSignal, Show } from 'solid-js';
-import './SightingCard.css';
+import './style.css';
 
 export default function SightingCard(props) {
 	const [imageLoaded, setImageLoaded] = createSignal(false);
 	const [imageError, setImageError] = createSignal(false);
-
-	/**
-	 * Generate a tiny blurred placeholder (1x1 pixel base64 green)
-	 */
-	const blurPlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e6efe0" width="100" height="100"/%3E%3C/svg%3E';
 
 	/**
 	 * Extract base64 data from photo_url to reduce initial load
@@ -43,7 +38,8 @@ export default function SightingCard(props) {
 		setImageError(true);
 	};
 
-	const photoUrl = getCompressedBase64(props.sighting.photo_url);
+	const photoUrl = props.sighting.photo_url;
+	
 
 	return (
 		<article class="sighting-card">
@@ -58,29 +54,21 @@ export default function SightingCard(props) {
 						</div>
 					}
 				>
-					{/* Blur-up effect: show placeholder while loading */}
-					<img
-						src={blurPlaceholder}
-						alt="Loading..."
-						class="sighting-card__image sighting-card__image--placeholder"
-						aria-hidden="true"
-					/>
+					{/* Loading skeleton while image loads */}
+					<Show when={!imageLoaded()}>
+						<div class="sighting-card__image-skeleton" aria-busy="true" />
+					</Show>
 
 					{/* Actual image - lazy loaded */}
 					<img
 						src={photoUrl}
 						alt={`Photo of ${props.sighting.animal_name}`}
-						class={`sighting-card__image ${imageLoaded() ? 'loaded' : ''}`}
+						class="sighting-card__image"
 						onLoad={handleImageLoad}
 						onError={handleImageError}
 						loading="lazy"
 						decoding="async"
 					/>
-
-					{/* Loading skeleton while image loads */}
-					<Show when={!imageLoaded()}>
-						<div class="sighting-card__image-skeleton" aria-busy="true" />
-					</Show>
 				</Show>
 			</div>
 

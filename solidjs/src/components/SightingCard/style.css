@@ -27,34 +27,16 @@
 	background-color: var(--color-bg-secondary);
 }
 
-/* Placeholder blur image (ultra-small, instant) */
-.sighting-card__image--placeholder {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	filter: blur(10px);
-	transform: scale(1.1);
-	z-index: 1;
-}
-
-/* Actual image - fades in when loaded */
+/* Actual image - displays immediately with object-fit */
 .sighting-card__image {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
-	opacity: 0;
-	transition: opacity 0.3s ease-in-out;
 	z-index: 2;
 	position: absolute;
 	top: 0;
 	left: 0;
-}
-
-.sighting-card__image.loaded {
-	opacity: 1;
 }
 
 /* Loading skeleton while image loads */
@@ -72,7 +54,7 @@
 	);
 	background-size: 200% 100%;
 	animation: shimmer 1.5s infinite;
-	z-index: 0;
+	z-index: 1;
 }
 
 @keyframes shimmer {
