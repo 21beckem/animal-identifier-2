@@ -8,6 +8,7 @@
 import { createSignal, onMount, For, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { listSightings, deleteSighting } from '../services/sightings';
+import SightingCard from '../components/SightingCard/comp';
 import LoadingSpinner from '../components/LoadingSpinner/comp';
 import './UserDashboard.css';
 
@@ -150,71 +151,14 @@ export default function UserDashboard() {
 				<div class="sightings-grid">
 					<For each={sightings()}>
 						{(sighting) => (
-							<article class="sighting-card">
-								{/* Photo */}
-								<Show when={sighting.photo_url} fallback={
-									<div class="sighting-card__placeholder">
-										<span class="placeholder-icon">📷</span>
-										<span class="placeholder-text">No photo</span>
-									</div>
-								}>
-									<img
-										src={sighting.photo_url}
-										alt={`Photo of ${sighting.animal_name}`}
-										class="sighting-card__image"
-										loading="lazy"
-									/>
-								</Show>
-
-								{/* Content */}
-								<div class="sighting-card__content">
-									<h3 class="sighting-card__title">{sighting.animal_name}</h3>
-									<p class="sighting-card__location">
-										<span class="icon">📍</span>
-										{sighting.location}
-									</p>
-									<p class="sighting-card__date">
-										<span class="icon">🕒</span>
-										{formatDate(sighting.timestamp_sighted)}
-									</p>
-								</div>
-
-								{/* Actions */}
-								<div class="sighting-card__actions">
-									<Show when={deleteConfirm() === sighting.id} fallback={
-										<>
-											<button
-												onclick={() => handleEdit(sighting.id)}
-												class="btn btn-secondary btn-sm"
-											>
-												✏️ Edit
-											</button>
-											<button
-												onclick={() => handleDelete(sighting.id)}
-												class="btn btn-danger btn-sm"
-											>
-												🗑️ Delete
-											</button>
-										</>
-									}>
-										<div class="confirm-delete">
-											<p class="confirm-text">Delete this sighting?</p>
-											<button
-												onclick={() => handleDelete(sighting.id)}
-												class="btn btn-danger btn-sm"
-											>
-												Yes, Delete
-											</button>
-											<button
-												onclick={cancelDelete}
-												class="btn btn-secondary btn-sm"
-											>
-												Cancel
-											</button>
-										</div>
-									</Show>
-								</div>
-							</article>
+							<SightingCard
+								sighting={sighting}
+								deleteConfirm={deleteConfirm()}
+								onEdit={handleEdit}
+								onDelete={handleDelete}
+								onCancelDelete={cancelDelete}
+								formatDate={formatDate}
+							/>
 						)}
 					</For>
 				</div>

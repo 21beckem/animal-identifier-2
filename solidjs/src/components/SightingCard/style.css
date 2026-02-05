@@ -1,0 +1,212 @@
+/**
+ * SightingCard Component Styles
+ * Optimized for performance with blur-up lazy loading
+ */
+
+.sighting-card {
+	background: rgba(249, 251, 247, 0.9);
+	border: 1px solid var(--color-border-light);
+	border-radius: 8px;
+	overflow: hidden;
+	transition: transform 0.2s, box-shadow 0.2s;
+	display: flex;
+	flex-direction: column;
+}
+
+.sighting-card:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-md);
+}
+
+/* Image Container - Key Performance Optimization */
+.sighting-card__image-wrapper {
+	position: relative;
+	width: 100%;
+	height: 200px;
+	overflow: hidden;
+	background-color: var(--color-bg-secondary);
+}
+
+/* Placeholder blur image (ultra-small, instant) */
+.sighting-card__image--placeholder {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	filter: blur(10px);
+	transform: scale(1.1);
+	z-index: 1;
+}
+
+/* Actual image - fades in when loaded */
+.sighting-card__image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+	z-index: 2;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.sighting-card__image.loaded {
+	opacity: 1;
+}
+
+/* Loading skeleton while image loads */
+.sighting-card__image-skeleton {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		rgba(230, 239, 224, 0.6),
+		rgba(230, 239, 224, 0.9),
+		rgba(230, 239, 224, 0.6)
+	);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+	z-index: 0;
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+/* Placeholder when no image */
+.sighting-card__placeholder {
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	color: var(--color-text-tertiary);
+}
+
+.placeholder-icon {
+	font-size: 3rem;
+	opacity: 0.5;
+}
+
+.placeholder-text {
+	font-size: 0.875rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+/* Content */
+.sighting-card__content {
+	padding: 1rem;
+	flex: 1;
+}
+
+.sighting-card__title {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-primary-dark);
+	margin: 0 0 0.5rem 0;
+}
+
+.sighting-card__location,
+.sighting-card__date {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin: 0.25rem 0;
+}
+
+.sighting-card__location .icon,
+.sighting-card__date .icon {
+	font-size: 1rem;
+}
+
+/* Actions */
+.sighting-card__actions {
+	padding: 1rem;
+	border-top: 1px solid var(--color-border-light);
+	display: flex;
+	gap: 0.5rem;
+}
+
+.confirm-delete {
+	width: 100%;
+}
+
+.confirm-text {
+	font-size: 0.875rem;
+	color: var(--color-error);
+	margin: 0 0 0.5rem 0;
+	font-weight: 500;
+}
+
+.confirm-delete .btn {
+	margin-right: 0.5rem;
+}
+
+/* Button Styles */
+.btn {
+	padding: 0.625rem 1.25rem;
+	font-size: 1rem;
+	font-weight: 500;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.2s, transform 0.1s;
+	text-decoration: none;
+	display: inline-block;
+}
+
+.btn:hover {
+	transform: translateY(-1px);
+}
+
+.btn:active {
+	transform: translateY(0);
+}
+
+.btn-secondary {
+	background-color: var(--color-bg-secondary);
+	color: var(--color-text-primary);
+	border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+	background-color: var(--color-bg-tertiary);
+}
+
+.btn-danger {
+	background-color: var(--color-error);
+	color: var(--color-text-inverse);
+}
+
+.btn-danger:hover {
+	background-color: #9F2E25;
+}
+
+.btn-sm {
+	padding: 0.5rem 1rem;
+	font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.sighting-card__image-wrapper {
+		height: 150px;
+	}
+}
