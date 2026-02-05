@@ -25,11 +25,11 @@
 .page-header h1 {
 	margin: 0 0 0.5rem 0;
 	font-size: 2rem;
-	color: #1a1a1a;
+	color: var(--color-primary-dark);
 }
 
 .page-description {
-	color: #666;
+	color: var(--color-text-secondary);
 	margin: 0;
 	font-size: 1rem;
 }
@@ -45,15 +45,15 @@
 }
 
 .alert-error {
-	background-color: #ffebee;
-	border: 1px solid #ef5350;
-	color: #c62828;
+	background-color: var(--color-error-light);
+	border: 1px solid var(--color-error);
+	color: var(--color-error);
 }
 
 .alert-success {
-	background-color: #e8f5e9;
-	border: 1px solid #66bb6a;
-	color: #2e7d32;
+	background-color: var(--color-success-light);
+	border: 1px solid var(--color-success);
+	color: var(--color-success);
 }
 
 .alert-icon {
@@ -67,10 +67,10 @@
 
 /* Form Styles */
 .edit-form {
-	background: white;
+	background: rgba(249, 251, 247, 0.95);
 	padding: 2rem;
 	border-radius: 8px;
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--color-border-light);
 }
 
 .form-group {
@@ -81,15 +81,15 @@
 	display: block;
 	margin-bottom: 0.5rem;
 	font-weight: 500;
-	color: #333;
+	color: var(--color-text-primary);
 }
 
 .required {
-	color: #d32f2f;
+	color: var(--color-error);
 }
 
 .optional {
-	color: #999;
+	color: var(--color-text-tertiary);
 	font-weight: normal;
 	font-size: 0.875rem;
 }
@@ -99,25 +99,27 @@
 	width: 100%;
 	padding: 0.75rem;
 	font-size: 1rem;
-	border: 1px solid #ddd;
+	border: 1px solid var(--color-border);
 	border-radius: 4px;
 	transition: border-color 0.2s;
+	background-color: var(--color-bg-primary);
+	color: var(--color-text-primary);
 }
 
 .form-group input[type="text"]:focus {
 	outline: none;
-	border-color: #2e7d32;
+	border-color: var(--color-primary);
 }
 
 .form-group input[type="text"]:disabled {
-	background-color: #f5f5f5;
-	color: #999;
+	background-color: var(--color-bg-secondary);
+	color: var(--color-text-tertiary);
 	cursor: not-allowed;
 }
 
 .readonly-field {
-	background-color: #f5f5f5;
-	color: #666;
+	background-color: var(--color-bg-secondary);
+	color: var(--color-text-tertiary);
 	cursor: not-allowed;
 }
 
@@ -127,14 +129,14 @@
 
 .error-message {
 	display: block;
-	color: #d32f2f;
+	color: var(--color-error);
 	font-size: 0.875rem;
 	margin-top: 0.25rem;
 }
 
 .field-hint {
 	display: block;
-	color: #999;
+	color: var(--color-text-tertiary);
 	font-size: 0.875rem;
 	margin-top: 0.25rem;
 }
@@ -148,14 +150,14 @@
 	display: block;
 	margin-bottom: 0.5rem;
 	font-weight: 500;
-	color: #333;
+	color: var(--color-text-primary);
 }
 
 .photo-container {
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--color-border-light);
 	border-radius: 4px;
 	padding: 1rem;
-	background: #fafafa;
+	background: var(--color-bg-secondary);
 }
 
 .current-photo-img {
@@ -169,10 +171,10 @@
 /* Photo Preview */
 .photo-preview {
 	margin-bottom: 1.5rem;
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--color-border-light);
 	border-radius: 4px;
 	padding: 1rem;
-	background: #fafafa;
+	background: var(--color-bg-secondary);
 }
 
 .preview-header {
@@ -184,14 +186,14 @@
 
 .preview-label {
 	font-size: 0.875rem;
-	color: #666;
+	color: var(--color-text-secondary);
 	font-weight: 500;
 }
 
 .clear-photo-btn {
 	background: none;
 	border: none;
-	color: #d32f2f;
+	color: var(--color-error);
 	font-size: 1.25rem;
 	cursor: pointer;
 	padding: 0.25rem 0.5rem;
@@ -200,7 +202,7 @@
 }
 
 .clear-photo-btn:hover:not(:disabled) {
-	background-color: #ffebee;
+	background-color: var(--color-error-light);
 }
 
 .clear-photo-btn:disabled {
@@ -249,31 +251,31 @@
 }
 
 .btn-primary {
-	background-color: #2e7d32;
-	color: white;
+	background-color: var(--color-primary);
+	color: var(--color-text-inverse);
 }
 
 .btn-primary:hover:not(:disabled) {
-	background-color: #1b5e20;
+	background-color: var(--color-primary-dark);
 }
 
 .btn-secondary {
-	background-color: #f5f5f5;
-	color: #333;
-	border: 1px solid #ddd;
+	background-color: var(--color-bg-secondary);
+	color: var(--color-text-primary);
+	border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-	background-color: #e0e0e0;
+	background-color: var(--color-bg-tertiary);
 }
 
 .btn-danger {
-	background-color: #d32f2f;
-	color: white;
+	background-color: var(--color-error);
+	color: var(--color-text-inverse);
 }
 
 .btn-danger:hover:not(:disabled) {
-	background-color: #b71c1c;
+	background-color: #9F2E25;
 }
 
 .btn-sm {

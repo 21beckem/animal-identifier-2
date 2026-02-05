@@ -15,28 +15,31 @@
    ============================================================================ */
 
 :root {
-	/* Colors */
-	--color-primary: #007ACC;
-	--color-primary-dark: #005A9E;
-	--color-primary-light: #4BA0E7;
-	--color-error: #E81B23;
-	--color-error-light: #F7D0D0;
-	--color-success: #107C10;
-	--color-success-light: #D0F0D0;
-	--color-warning: #FFB81C;
-	--color-warning-light: #FFF4D4;
+	/* Colors - Jungle Theme */
+	--color-primary: #2F6B3C;
+	--color-primary-dark: #1F4D2B;
+	--color-primary-light: #5E8F6A;
+	--color-accent: #C9A43B;
+	--color-accent-dark: #9E7E24;
+	--color-error: #C44536;
+	--color-error-light: #F6D6D2;
+	--color-success: #2E7D32;
+	--color-success-light: #D7EFD8;
+	--color-warning: #C28B2C;
+	--color-warning-light: #F4E6C8;
 
-	--color-bg-primary: #FFFFFF;
-	--color-bg-secondary: #F3F3F3;
-	--color-bg-tertiary: #E8E8E8;
+	--color-bg-primary: #F3F7F1;
+	--color-bg-secondary: #E6EFE0;
+	--color-bg-tertiary: #D9E5D2;
 
-	--color-text-primary: #1F1F1F;
-	--color-text-secondary: #616161;
-	--color-text-tertiary: #8C8C8C;
-	--color-text-inverse: #FFFFFF;
+	--color-text-primary: #1D2A1E;
+	--color-text-secondary: #405042;
+	--color-text-tertiary: #6B7A6D;
+	--color-text-inverse: #F9FBF7;
 
-	--color-border: #D1D1D1;
-	--color-border-light: #E5E5E5;
+	--color-border: #C8D6C4;
+	--color-border-light: #DEE8DA;
+	--color-focus-ring: rgba(47, 107, 60, 0.25);
 
 	/* Spacing Scale (4px base unit) */
 	--space-0: 0;
@@ -112,6 +115,11 @@ body {
 	line-height: var(--line-height-normal);
 	color: var(--color-text-primary);
 	background-color: var(--color-bg-primary);
+	background-image:
+		radial-gradient(circle at 10% 20%, rgba(94, 143, 106, 0.18), transparent 35%),
+		radial-gradient(circle at 90% 10%, rgba(201, 164, 59, 0.14), transparent 40%),
+		linear-gradient(180deg, #f5f9f1 0%, #edf4e8 40%, #e4efe0 100%);
+	background-attachment: fixed;
 }
 
 h1,
@@ -206,7 +214,7 @@ textarea:focus,
 select:focus {
 	outline: none;
 	border-color: var(--color-primary);
-	box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.1);
+	box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 input[type='checkbox'],
@@ -239,11 +247,12 @@ button {
 	border: none;
 	border-radius: var(--radius-md);
 	cursor: pointer;
-	transition: background-color var(--transition-normal), box-shadow var(--transition-normal);
+	transition: background-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-fast);
 }
 
 button:hover:not(:disabled) {
 	background-color: var(--color-primary-dark);
+	transform: translateY(-1px);
 }
 
 button:focus {
@@ -253,6 +262,7 @@ button:focus {
 
 button:active:not(:disabled) {
 	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+	transform: translateY(0);
 }
 
 button:disabled {
@@ -276,6 +286,139 @@ button.danger {
 
 button.danger:hover:not(:disabled) {
 	background-color: #C41511;
+}
+
+/* ============================================================================
+   Button Utility Classes
+   ============================================================================ */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	padding: var(--space-3) var(--space-6);
+	border-radius: var(--radius-lg);
+	font-weight: var(--font-weight-medium);
+	text-decoration: none;
+	transition: transform var(--transition-fast), box-shadow var(--transition-normal), background-color var(--transition-normal);
+	box-shadow: var(--shadow-sm);
+}
+
+.btn--primary {
+	background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+	color: var(--color-text-inverse);
+}
+
+.btn--primary:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-md);
+}
+
+.btn--secondary {
+	background-color: rgba(249, 251, 247, 0.8);
+	color: var(--color-primary-dark);
+	border: 1px solid var(--color-border);
+}
+
+.btn--secondary:hover {
+	background-color: var(--color-bg-secondary);
+}
+
+/* ============================================================================
+   Home & Section Styles
+   ============================================================================ */
+
+.home {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-12);
+}
+
+.hero {
+	padding: var(--space-12) var(--space-4);
+	background:
+		linear-gradient(135deg, rgba(47, 107, 60, 0.15) 0%, rgba(201, 164, 59, 0.1) 100%),
+		linear-gradient(180deg, #f7fbf3 0%, #eef5e8 100%);
+	border-bottom: 1px solid var(--color-border-light);
+}
+
+.hero__content {
+	max-width: 900px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.hero h1 {
+	font-size: clamp(2rem, 4vw, 3rem);
+	color: var(--color-primary-dark);
+	margin-bottom: var(--space-4);
+}
+
+.hero p {
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-lg);
+	line-height: var(--line-height-relaxed);
+	margin-bottom: var(--space-6);
+}
+
+.hero__actions {
+	display: flex;
+	justify-content: center;
+	gap: var(--space-4);
+	flex-wrap: wrap;
+}
+
+.section {
+	padding: var(--space-12) var(--space-4);
+}
+
+.section--muted {
+	background-color: rgba(230, 239, 224, 0.6);
+	border-top: 1px solid var(--color-border-light);
+	border-bottom: 1px solid var(--color-border-light);
+}
+
+.section__title {
+	text-align: center;
+	margin-bottom: var(--space-8);
+	color: var(--color-primary-dark);
+}
+
+.steps {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: var(--space-6);
+}
+
+.step {
+	background-color: rgba(249, 251, 247, 0.9);
+	border: 1px solid var(--color-border-light);
+	border-radius: var(--radius-lg);
+	padding: var(--space-6);
+	box-shadow: var(--shadow-sm);
+}
+
+.step__num {
+	width: 36px;
+	height: 36px;
+	border-radius: var(--radius-full);
+	background-color: var(--color-accent);
+	color: var(--color-text-inverse);
+	font-weight: var(--font-weight-bold);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: var(--space-3);
+}
+
+.step__title {
+	color: var(--color-primary-dark);
+	margin-bottom: var(--space-2);
+}
+
+.step__text {
+	color: var(--color-text-secondary);
 }
 
 /* ============================================================================

@@ -4,8 +4,9 @@
 	position: sticky;
 	top: 0;
 	z-index: 100;
-	background-color: var(--color-primary);
+	background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
 	box-shadow: var(--shadow-md);
+	border-bottom: 1px solid rgba(249, 251, 247, 0.2);
 }
 
 .navbar__container {
@@ -61,8 +62,8 @@
 
 .navbar__btn {
 	padding: var(--space-2) var(--space-4);
-	background-color: var(--color-text-inverse);
-	color: var(--color-primary);
+	background-color: rgba(249, 251, 247, 0.95);
+	color: var(--color-primary-dark);
 	border: none;
 	border-radius: var(--radius-md);
 	font-weight: var(--font-weight-medium);
@@ -101,7 +102,7 @@
 	flex-direction: column;
 	padding: var(--space-4);
 	background-color: var(--color-primary-dark);
-	border-top: 1px solid var(--color-primary-light);
+	border-top: 1px solid rgba(249, 251, 247, 0.2);
 }
 
 .navbar__mobile-link {

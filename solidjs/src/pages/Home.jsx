@@ -6,6 +6,7 @@
  */
 
 import { A } from '@solidjs/router';
+import authStore from '../stores/auth';
 
 export default function Home() {
 	return (
@@ -19,12 +20,19 @@ export default function Home() {
 						Build your personal wildlife journal.
 					</p>
 					<div class="hero__actions">
-						<A href="/signup" class="btn btn--primary">
-							Get Started
-						</A>
-						<A href="/signin" class="btn btn--secondary">
-							Sign In
-						</A>
+						<Show when={!authStore.isAuthenticatedSignal()}>
+							<A href="/signup" class="btn btn--primary">
+								Get Started
+							</A>
+							<A href="/signin" class="btn btn--secondary">
+								Sign In
+							</A>
+						</Show>
+						<Show when={authStore.isAuthenticatedSignal()}>
+							<A href="/dashboard" class="btn btn--primary">
+								View Dashboard
+							</A>
+						</Show>
 					</div>
 				</div>
 			</section>
